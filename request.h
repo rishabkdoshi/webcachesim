@@ -12,6 +12,7 @@ class SimpleRequest
 private:
     IdType _id; // request object id
     uint64_t _size; // request size in bytes
+    uint64_t _timestamp; //timestamp
 
 public:
     SimpleRequest()
@@ -23,10 +24,16 @@ public:
 
     // Create request
     SimpleRequest(IdType id, uint64_t size)
-        : _id(id),
-          _size(size)
+            : _id(id),
+              _size(size)
     {
     }
+
+    SimpleRequest(IdType id, uint64_t size, uint64_t timestamp)
+            : _id(id), _size(size), _timestamp(timestamp)
+    {
+    }
+
 
     void reinit(IdType id, uint64_t size)
     {
@@ -34,11 +41,19 @@ public:
         _size = size;
     }
 
+    void reinit(IdType id, uint64_t size, uint64_t timestamp){
+        _id = id;
+        _size = size;
+        _timestamp = timestamp;
+    }
 
     // Print request to stdout
     void print() const
     {
-        std::cout << "id" << getId() << " size " << getSize() << std::endl;
+        if(_timestamp == 0)
+            std::cout << "id" << getId() << " size " << getSize() << std::endl;
+        else
+            std::cout << "id" << getId() << " size " << getSize() << " time " << getTimestamp() << std::endl;
     }
 
     // Get request object id
@@ -51,6 +66,10 @@ public:
     uint64_t getSize() const
     {
         return _size;
+    }
+
+    uint64_t getTimestamp() const {
+        return _timestamp;
     }
 };
 

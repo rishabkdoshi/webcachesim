@@ -1,0 +1,15 @@
+//
+// Created by Rishab Ketan Doshi on 11/18/19.
+//
+
+#ifndef WEBCACHESIM_OPTIMIZATIONGOAL_H
+#define WEBCACHESIM_OPTIMIZATIONGOAL_H
+
+
+enum OptimizationGoal {
+    OBJECT_HIT_RATIO,
+    BYTE_HIT_RATIO
+};
+
+
+#endif //WEBCACHESIM_OPTIMIZATIONGOAL_H
