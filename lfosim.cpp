@@ -23,13 +23,12 @@ int main (int argc, char* argv[])
 
     // create cache
 //    const string cacheType = argv[2];
-    const string cacheType = "LFO";
+    const string initialCacheType = "LRU";
 
 
     // configure cache size
 //    const uint64_t cache_size  = std::stoull(argv[3]);
-    const uint64_t cache_size  = 10000;
-//    webcache->setSize(cache_size);
+    const uint64_t cacheSize  = 10000;
 
     // parse cache parameters
 //    regex opexp ("(.*)=(.*)");
@@ -57,7 +56,7 @@ int main (int argc, char* argv[])
         SimpleRequest req = SimpleRequest(id, size, t);
         requestList.push_back(req);
     }
-    LFOTrainUtil lfoTrainUtil(requestList);
+    LFOTrainUtil lfoTrainUtil(requestList, initialCacheType, cacheSize);
     lfoTrainUtil.train();
 
 

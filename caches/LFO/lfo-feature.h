@@ -31,27 +31,29 @@ private:
     OptimizationGoal _optimizationGoal; //OHR or BHR
     uint64_t _timestamp;//timestamp of request corresponding to this feature
     vector<uint64_t> _time_gap_list; //Time gap between consecutive requests to this object
-    uint64_t available_cache_size;
+    uint64_t _available_cache_size;
 
 
 public:
     // Create request
-    LFOFeature(IdType id, uint64_t size, uint64_t timestamp, vector<uint64_t> time_gap_list)
+    LFOFeature(IdType id, uint64_t size, uint64_t timestamp, vector<uint64_t> time_gap_list, uint64_t available_cache_size)
             : _id(id),
               _size(size),
               _timestamp(timestamp),
-              _time_gap_list(time_gap_list)
+              _time_gap_list(time_gap_list),
+              _available_cache_size(available_cache_size)
     {
         //default
         _optimizationGoal = OBJECT_HIT_RATIO;
     }
 
-    LFOFeature(SimpleRequest simpleRequest, vector<uint64_t> time_gap_list){
+    LFOFeature(SimpleRequest simpleRequest, vector<uint64_t> time_gap_list, uint64_t available_cache_size){
         _id = simpleRequest.getId();
         _size = simpleRequest.getSize();
         _timestamp = simpleRequest.getTimestamp();
         _time_gap_list = time_gap_list;
         _optimizationGoal = OBJECT_HIT_RATIO;
+        _available_cache_size = available_cache_size;
     }
 
     // Print request to stdout
@@ -95,7 +97,7 @@ public:
     }
 
     uint64_t getAvailableCacheSize() const {
-        return available_cache_size;
+        return _available_cache_size;
     }
 };
 

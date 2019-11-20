@@ -65,6 +65,9 @@ public:
     uint64_t getSize() const {
         return(_cacheSize);
     }
+    uint64_t getFreeBytes() const {
+        return (_cacheSize - _currentSize);
+    }
 
     // helper functions (factory pattern)
     static void registerType(std::string name, CacheFactory *factory) {

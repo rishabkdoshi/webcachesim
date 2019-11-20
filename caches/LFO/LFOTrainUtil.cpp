@@ -14,16 +14,24 @@ void LFOTrainUtil::createFeatures(vector<SimpleRequest> reqs) {
             vector<LFOFeature> featureList = it->second;
             int size = featureList.size();
             LFOFeature prevFeature = featureList.at(size - 1);
-            LFOFeature newLfoFeature(r, getUpdatedList(r, prevFeature));
+            LFOFeature newLfoFeature(r, getUpdatedList(r, prevFeature),getFreeBytes(r));
             it->second.push_back(newLfoFeature);
         }else{
             vector<LFOFeature> featureList;
             vector<uint64_t> newTimeGapList;
-            LFOFeature lfoFeature(r,newTimeGapList);
+            LFOFeature lfoFeature(r,newTimeGapList,getFreeBytes(r));
             (featureList).push_back(lfoFeature);
             _requestToFeatureMap.insert({r.getId(),featureList});
         }
     }
+}
+
+uint64_t LFOTrainUtil::getFreeBytes(SimpleRequest r){
+    auto freeBytes = _initialCache->getFreeBytes();
+    if(!_initialCache->lookup(&r)) {
+        _initialCache->admit(&r);
+    }
+    return freeBytes;
 }
 
 vector<uint64_t> LFOTrainUtil::getUpdatedList(SimpleRequest r, LFOFeature lfoFeature){
