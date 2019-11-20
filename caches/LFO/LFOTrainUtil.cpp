@@ -14,27 +14,31 @@ void LFOTrainUtil::createFeatures(vector<SimpleRequest> reqs) {
             vector<LFOFeature> featureList = it->second;
             int size = featureList.size();
             LFOFeature prevFeature = featureList.at(size - 1);
-            LFOFeature newLfoFeature(r, getUpdatedList(r, prevFeature),getFreeBytes(r));
+            LFOFeature newLfoFeature(r, getUpdatedTimeGapList(r, prevFeature), _trainingCache->getFreeBytes());
+            getCacheHitOrMiss(r) ? newLfoFeature.setLabel(CACHE_HIT) : newLfoFeature.setLabel(CACHE_MISS);
             it->second.push_back(newLfoFeature);
         }else{
             vector<LFOFeature> featureList;
             vector<uint64_t> newTimeGapList;
-            LFOFeature lfoFeature(r,newTimeGapList,getFreeBytes(r));
+            LFOFeature lfoFeature(r,newTimeGapList, _trainingCache->getFreeBytes());
+            getCacheHitOrMiss(r) ? lfoFeature.setLabel(CACHE_HIT) : lfoFeature.setLabel(CACHE_MISS);
             (featureList).push_back(lfoFeature);
             _requestToFeatureMap.insert({r.getId(),featureList});
         }
     }
 }
 
-uint64_t LFOTrainUtil::getFreeBytes(SimpleRequest r){
-    auto freeBytes = _initialCache->getFreeBytes();
-    if(!_initialCache->lookup(&r)) {
-        _initialCache->admit(&r);
+bool LFOTrainUtil::getCacheHitOrMiss(SimpleRequest r){
+    auto cacheHit = _trainingCache->lookup(&r);
+    auto shouldAdmit = _trainingCache->shouldAdmit(&r);
+
+    if((!cacheHit) && shouldAdmit) {
+        _trainingCache->admit(&r);
     }
-    return freeBytes;
+    return cacheHit;
 }
 
-vector<uint64_t> LFOTrainUtil::getUpdatedList(SimpleRequest r, LFOFeature lfoFeature){
+vector<uint64_t> LFOTrainUtil::getUpdatedTimeGapList(SimpleRequest r, LFOFeature lfoFeature){
     vector<uint64_t> oldTimeGapList = lfoFeature.getTimeGapList();
     uint64_t diff = r.getTimestamp() - lfoFeature.getTimestamp();
     vector<uint64_t> newTimeGapList;
@@ -53,7 +57,16 @@ vector<uint64_t> LFOTrainUtil::getUpdatedList(SimpleRequest r, LFOFeature lfoFea
     return newTimeGapList;
 }
 
-void LFOTrainUtil::train() {
-    createFeatures(_reqs);
-    cout << "Done" << endl;
+vector<vector<uint64_t>> LFOTrainUtil::getFeatureVectors() {
+    vector<vector<uint64_t>> featureVectors;
+
+    for(auto it = _requestToFeatureMap.begin(); it != _requestToFeatureMap.end(); ++it){
+        auto LFOFeatureList = it->second;
+
+        for(auto feature = LFOFeatureList.begin(); feature != LFOFeatureList.end(); ++feature){
+            featureVectors.push_back((*feature).getFeatureVector());
+        }
+    }
+
+    cout << "Done creating feature vectors" << endl;
 }

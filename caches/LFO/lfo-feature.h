@@ -12,6 +12,10 @@
 
 using namespace std;
 
+const uint64_t MISSING_TIME_GAP = 0;
+const uint64_t CACHE_HIT = 1;
+const uint64_t CACHE_MISS = 0;
+
 /**
  * Object size;
  * Most recent retrieval cost;
@@ -33,6 +37,7 @@ private:
     vector<uint64_t> _time_gap_list; //Time gap between consecutive requests to this object
     uint64_t _available_cache_size;
 
+    uint64_t _label; //admitted to cache or not
 
 public:
     // Create request
@@ -54,6 +59,10 @@ public:
         _time_gap_list = time_gap_list;
         _optimizationGoal = OBJECT_HIT_RATIO;
         _available_cache_size = available_cache_size;
+    }
+
+    ~LFOFeature(){
+
     }
 
     // Print request to stdout
@@ -99,6 +108,30 @@ public:
     uint64_t getAvailableCacheSize() const {
         return _available_cache_size;
     }
+
+    void setLabel(uint64_t label) {
+        _label = label;
+    }
+
+    vector<uint64_t> getFeatureVector() const {
+        vector<uint64_t> features;
+        features.push_back(_size);
+        features.push_back(getRetrievalCost());
+        features.push_back(_available_cache_size);
+
+        for(int i=_time_gap_list.size();i<50;i++)
+            features.push_back(MISSING_TIME_GAP);
+
+        for (auto it = _time_gap_list.begin(); it != _time_gap_list.end(); ++it){
+            features.push_back(*it);
+        }
+
+        features.push_back(_label);
+
+        return features;
+    }
+
+
 };
 
 #endif //WEBCACHESIM_LFO_FEATURE_H

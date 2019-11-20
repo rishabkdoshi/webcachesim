@@ -14,19 +14,22 @@
 class LFOTrainUtil {
 private:
     vector<SimpleRequest> _reqs;
-    vector<uint64_t> getUpdatedList(SimpleRequest r, LFOFeature lfoFeature);
+    static vector<uint64_t> getUpdatedTimeGapList(SimpleRequest r, LFOFeature lfoFeature);
     void createFeatures(vector<SimpleRequest> reqs);
-    uint64_t getFreeBytes(SimpleRequest r);
+    bool getCacheHitOrMiss(SimpleRequest r);
+
     //map from objectId to list of LFO features
     unordered_map<uint64_t, vector<LFOFeature>> _requestToFeatureMap;
 
-    unique_ptr<Cache> _initialCache;//cache used for first epoch feature calculations
+    unique_ptr<Cache> _trainingCache;//cache used for training feature calculations
 
 public:
-    void train();
+    vector<vector<uint64_t>> getFeatureVectors();
+
     LFOTrainUtil(vector<SimpleRequest> reqs, string cacheType, uint64_t cacheSize): _reqs(reqs){
-        _initialCache =  (Cache::create_unique(cacheType));
-        _initialCache->setSize(cacheSize);
+        _trainingCache =  (Cache::create_unique(cacheType));
+        _trainingCache->setSize(cacheSize);
+        createFeatures(reqs);
     }
 };
 

@@ -50,6 +50,7 @@ public:
     virtual void evict(SimpleRequest* req) = 0;
     virtual void evict() = 0;
 
+
     // configure cache parameters
     virtual void setSize(uint64_t cs) {
         _cacheSize = cs;
@@ -67,6 +68,10 @@ public:
     }
     uint64_t getFreeBytes() const {
         return (_cacheSize - _currentSize);
+    }
+
+    bool shouldAdmit(SimpleRequest* req){
+        return true;
     }
 
     // helper functions (factory pattern)
