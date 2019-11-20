@@ -69,4 +69,5 @@ vector<vector<uint64_t>> LFOTrainUtil::getFeatureVectors() {
     }
 
     cout << "Done creating feature vectors" << endl;
+    return featureVectors;
 }
