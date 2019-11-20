@@ -5,7 +5,7 @@
 #ifndef WEBCACHESIM_LFOTRAINUTIL_H
 #define WEBCACHESIM_LFOTRAINUTIL_H
 
-#include <cache.h>
+#include "../../cache.h"
 #include "request.h"
 #include "lfo-feature.h"
 #include "vector"

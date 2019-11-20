@@ -57,11 +57,11 @@ int main (int argc, char* argv[])
         requestList.push_back(req);
     }
     LFOTrainUtil lfoTrainUtil(requestList, initialCacheType, cacheSize);
-    lfoTrainUtil.getFeatureVectors();
-
+    auto featureVectors = lfoTrainUtil.getFeatureVectors();
 
     infile.close();
 
+   
 
     return 0;
 }
