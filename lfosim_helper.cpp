@@ -4,10 +4,103 @@
 void *get_opt_labels(void* gol_args) {
     train_lightgbm_args* args = (train_lightgbm_args *) gol_args;
     std::vector<trEntry> opt_trace;
-    uint64_t byte_sum = 0;
-    parseTraceFile(opt_trace, args->traces, byte_sum);
-    cacheAlg(opt_trace);
-    printRes(opt_trace, byte_sum, args->cache_size);
+    uint64_t totalUniqC = parseTraceFile(opt_trace, args->traces);
+    uint64_t totalReqc = opt_trace.size();
+
+    // not sure what these do. The paper doesn't talk about this in the 
+    // algorithm
+    uint64_t maxEjectSize = totalReqc - totalUniqC;
+    uint64_t solverPar = 4;
+    //-------------
+
+    std::vector<double> utilSteps2;
+    for(auto & it: opt_trace) {
+        if(it.size > args->cache_size) {
+            it.hasNext = false;
+        }
+        if(it.hasNext) {
+            assert(it.utility>=0);
+            utilSteps2.push_back(it.utility);
+        }
+    }
+
+    std::sort(utilSteps2.begin(), utilSteps2.end(),std::greater<double>());
+
+    std::vector<double> utilSteps;
+    utilSteps.push_back(1); // max util as start
+    uint64_t curEjectSize = 0;
+    // LOG("ejSize",maxEjectSize,trace.size(),utilities.size());
+    assert(maxEjectSize>0);
+    for(auto & it: utilSteps2) {
+        curEjectSize++;
+        if(curEjectSize >= maxEjectSize/2 && (it != *(--(utilSteps.end())) ) ) {
+            utilSteps.push_back(it);
+            //DEBUG
+            LOG("utilStep",it,0,curEjectSize);
+            curEjectSize = 0;
+        }
+    }
+    utilSteps.push_back(0); // min util as end
+    utilSteps2.clear();
+    utilSteps2.shrink_to_fit();
+
+    long double curCost=0, curHits, overallHits;
+    uint64_t integerHits = 0;
+    size_t effectiveEjectSize=0;
+    
+    // LNS iteration steps
+    for(size_t k=0; k+2<utilSteps.size(); k++) {
+
+        // set step's util boundaries
+        const double minUtil = utilSteps[k+2];
+        const double maxUtil = utilSteps[k];
+
+        std::cerr << "k1. " << k << " lU " << minUtil << " uU " << maxUtil
+                  << " cC " << curCost << " cH " << curHits << " cR " << effectiveEjectSize
+                  << " oH " << overallHits << " oR " << totalReqc  << " iH " << integerHits << std::endl;
+
+
+        // create MCF digraph with arc utilities in [minUtil,maxUtil]
+        SmartDigraph g; // mcf graph
+        SmartDigraph::ArcMap<int64_t> cap(g); // mcf capacities
+        SmartDigraph::ArcMap<double> cost(g); // mcf costs
+        SmartDigraph::NodeMap<int64_t> supplies(g); // mcf demands/supplies
+        effectiveEjectSize = createMCF(g, opt_trace, args->cache_size, 
+                                       cap, cost, supplies, minUtil, maxUtil);
+
+        std::cerr << "k2. " << k << " lU " << minUtil << " uU " << maxUtil
+                  << " cC " << curCost << " cH " << curHits << " cR " << effectiveEjectSize
+                  << " oH " << overallHits << " oR " << totalReqc  << " iH " << integerHits << std::endl;
+
+
+        // solve this MCF
+        SmartDigraph::ArcMap<uint64_t> flow(g);
+        curCost = solveMCF(g, cap, cost, supplies, flow, solverPar);
+
+        std::cerr << "k3. " << k << " lU " << minUtil << " uU " << maxUtil
+                  << " cC " << curCost << " cH " << curHits << " cR " << effectiveEjectSize
+                  << " oH " << overallHits << " oR " << totalReqc  << " iH " << integerHits << std::endl;
+
+
+        // write DVAR to trace
+        curHits = 0;
+        overallHits = 0;
+        integerHits = 0;
+        for(uint64_t i=0; i<opt_trace.size(); i++) {
+            if(opt_trace[i].active) {
+                opt_trace[i].dvar = 1.0L - flow[g.arcFromId(opt_trace[i].arcId)]/static_cast<long double>(opt_trace[i].size);
+                opt_trace[opt_trace[i].nextSeen].hit = opt_trace[i].dvar;
+                curHits += opt_trace[i].dvar;
+            }
+            LOG("dv",i,opt_trace[i].dvar,opt_trace[i].size);
+            assert(opt_trace[i].dvar >= 0 && opt_trace[i].dvar<=1);
+            overallHits += opt_trace[i].dvar;
+            if(opt_trace[i].dvar > 0.99) {
+                integerHits++;
+            }
+        }
+    }
+
 
     pthread_exit(NULL);
 }
