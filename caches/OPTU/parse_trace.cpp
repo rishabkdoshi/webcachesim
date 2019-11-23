@@ -10,7 +10,7 @@
 //using namespace lemon;
 
 uint64_t parseTraceFile(std::vector<trEntry> & opt_trace,
-                        const std::vector<SimpleRequest> & traces) {
+                        std::vector<SimpleRequest> traces) {
     uint64_t time, id, size, reqc=0, uniqc=0;
     std::unordered_map<std::pair<uint64_t, uint64_t>, uint64_t> lastSeen;
 

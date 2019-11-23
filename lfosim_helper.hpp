@@ -5,8 +5,8 @@
 #include <iomanip>
 #include "request.h"
 #include "caches/LFO/LFOTrainUtil.h"
-#include "caches/OPT-U/parse_trace.h"
-#include "caches/OPT-U/solve_mcf.h"
+#include "caches/OPTU/parse_trace.h"
+#include "caches/OPTU/solve_mcf.h"
 
 #define MAIN_THREADS 2
 #define TRAIN_THREADS 2

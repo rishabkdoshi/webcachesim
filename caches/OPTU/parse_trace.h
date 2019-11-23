@@ -47,7 +47,7 @@ struct trEntry {
 
 
 uint64_t parseTraceFile(std::vector<trEntry> & trace,
-                        const std::vector<SimpleRequest> traces);
+                        std::vector<SimpleRequest> traces);
 
 inline bool isInEjectSet(const double minUtil, const double maxUtil, const trEntry & curEntry) {
     return( curEntry.utility>=minUtil && curEntry.utility<maxUtil );
