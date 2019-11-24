@@ -18,9 +18,6 @@ uint64_t parseTraceFile(std::vector<trEntry> & opt_trace,
         time = trace.getTimestamp();
         id = trace.getId();
         size = trace.getSize();
-        if(reqc % 1000000 == 0) {
-            std::cerr << "parsing " << reqc << "\n";
-        }
         const auto idSize = std::make_pair(id,size);
         if(lastSeen.count(idSize)>0) {
             opt_trace[lastSeen[idSize]].hasNext = true;
