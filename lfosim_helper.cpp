@@ -133,6 +133,7 @@ std::vector<SimpleRequest> get_traces(std::ifstream & infile,
 void run_model(std::vector<std::vector<uint64_t>> ofeatures, size_t epoch) {
     if (epoch < 2) {
         // Run LFU. 
+        unique_ptr<Cache> webcache = (Cache::create_unique("LRU"));
 
     } else {
         // Run the most currently trained LFO.

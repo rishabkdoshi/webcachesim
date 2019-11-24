@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <list>
 #include <random>
-#include "cache.h"
+#include "../cache.h"
 #include "cache_object.h"
 #include "adaptsize_const.h" /* AdaptSize constants */
 
