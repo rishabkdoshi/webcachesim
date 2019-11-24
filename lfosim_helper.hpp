@@ -23,6 +23,7 @@ struct train_lightgbm_args {
     std::string cache_type;
     uint64_t cache_size;
     vector<vector<uint64_t>> features;
+    size_t epoch;
 
     train_lightgbm_args(): traces(), cache_type("LRU"), cache_size(1000), features() {}
     train_lightgbm_args(std::string ct, uint64_t cs): cache_type(ct), cache_size(cs) {} 

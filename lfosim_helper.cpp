@@ -1,10 +1,11 @@
 #include "lfosim_helper.hpp"
 
+std::vector<uint64_t> get_opt_decisions(std::vector<SimpleRequest> traces,
+                                        uint64_t cache_size) {
 
-void *get_opt_labels(void* gol_args) {
-    train_lightgbm_args* args = (train_lightgbm_args *) gol_args;
+    
     std::vector<trEntry> opt_trace;
-    uint64_t totalUniqC = parseTraceFile(opt_trace, args->traces);
+    uint64_t totalUniqC = parseTraceFile(opt_trace, traces);
     uint64_t totalReqc = opt_trace.size();
 
     // not sure what these do. The paper doesn't talk about this in the 
@@ -15,7 +16,7 @@ void *get_opt_labels(void* gol_args) {
 
     std::vector<double> utilSteps2;
     for(auto & it: opt_trace) {
-        if(it.size > args->cache_size) {
+        if(it.size > cache_size) {
             it.hasNext = false;
         }
         if(it.hasNext) {
@@ -55,9 +56,9 @@ void *get_opt_labels(void* gol_args) {
         const double minUtil = utilSteps[k+2];
         const double maxUtil = utilSteps[k];
 
-        std::cerr << "k1. " << k << " lU " << minUtil << " uU " << maxUtil
-                  << " cC " << curCost << " cH " << curHits << " cR " << effectiveEjectSize
-                  << " oH " << overallHits << " oR " << totalReqc  << " iH " << integerHits << std::endl;
+        // std::cerr << "k1. " << k << " lU " << minUtil << " uU " << maxUtil
+        //           << " cC " << curCost << " cH " << curHits << " cR " << effectiveEjectSize
+        //           << " oH " << overallHits << " oR " << totalReqc  << " iH " << integerHits << std::endl;
 
 
         // create MCF digraph with arc utilities in [minUtil,maxUtil]
@@ -65,21 +66,21 @@ void *get_opt_labels(void* gol_args) {
         SmartDigraph::ArcMap<int64_t> cap(g); // mcf capacities
         SmartDigraph::ArcMap<double> cost(g); // mcf costs
         SmartDigraph::NodeMap<int64_t> supplies(g); // mcf demands/supplies
-        effectiveEjectSize = createMCF(g, opt_trace, args->cache_size, 
+        effectiveEjectSize = createMCF(g, opt_trace, cache_size, 
                                        cap, cost, supplies, minUtil, maxUtil);
 
-        std::cerr << "k2. " << k << " lU " << minUtil << " uU " << maxUtil
-                  << " cC " << curCost << " cH " << curHits << " cR " << effectiveEjectSize
-                  << " oH " << overallHits << " oR " << totalReqc  << " iH " << integerHits << std::endl;
+        // std::cerr << "k2. " << k << " lU " << minUtil << " uU " << maxUtil
+        //           << " cC " << curCost << " cH " << curHits << " cR " << effectiveEjectSize
+        //           << " oH " << overallHits << " oR " << totalReqc  << " iH " << integerHits << std::endl;
 
 
         // solve this MCF
         SmartDigraph::ArcMap<uint64_t> flow(g);
         curCost = solveMCF(g, cap, cost, supplies, flow, solverPar);
 
-        std::cerr << "k3. " << k << " lU " << minUtil << " uU " << maxUtil
-                  << " cC " << curCost << " cH " << curHits << " cR " << effectiveEjectSize
-                  << " oH " << overallHits << " oR " << totalReqc  << " iH " << integerHits << std::endl;
+        // std::cerr << "k3. " << k << " lU " << minUtil << " uU " << maxUtil
+        //           << " cC " << curCost << " cH " << curHits << " cR " << effectiveEjectSize
+        //           << " oH " << overallHits << " oR " << totalReqc  << " iH " << integerHits << std::endl;
 
 
         // write DVAR to trace
@@ -101,44 +102,18 @@ void *get_opt_labels(void* gol_args) {
         }
     }
 
-
-    pthread_exit(NULL);
-}
-
-void *get_features(void* gf_args) {
-    train_lightgbm_args* args = (train_lightgbm_args *) gf_args;
-
-    LFOTrainUtil lfoTrainUtil(args->traces, args->cache_type, args->cache_size);
-    auto features = lfoTrainUtil.getFeatureVectors();
-    args->features = features;  // This is where I'm storing the features.
-
-    pthread_exit(NULL);
-}
-
-void *run_model(void* rm_args) {
-    
-}
-
-void *train_lightgbm(void *tl_args) {
-
-    train_lightgbm_args* args = (train_lightgbm_args *) tl_args; 
-    // If there are no traces from the previous run, then we can exit. 
-    if (args->traces.empty()) {
-        pthread_exit(NULL);
+    std::vector<uint64_t> opt_decisions;
+    for (auto trace : opt_trace) {
+        opt_decisions.push_back(trace.dvar);
     }
 
-    pthread_t train_threads[TRAIN_THREADS];
-    pthread_create(&train_threads[0], NULL, get_opt_labels, tl_args);
-    pthread_create(&train_threads[1], NULL, get_features, tl_args);
+    return opt_decisions;
 
-    pthread_join(train_threads[0], NULL);
-    pthread_join(train_threads[1], NULL);
+}
 
-    // train the light gbm now. 
-
-    
-    pthread_exit(NULL);
-    
+void retrain_model(std::vector<uint64_t> opt_decisions,
+                   std::vector<std::vector<uint64_t>> o_features) {
+    cout << "Here we will retrain the model. " << std::endl;
 }
 
 std::vector<SimpleRequest> get_traces(std::ifstream & infile, 
@@ -154,44 +129,59 @@ std::vector<SimpleRequest> get_traces(std::ifstream & infile,
     return requestList;
 }
 
+
+void run_model(std::vector<std::vector<uint64_t>> ofeatures, size_t epoch) {
+    if (epoch < 2) {
+        // Run LFU. 
+
+    } else {
+        // Run the most currently trained LFO.
+    }
+}
+
+
 void run_lfo_sim(const char* path, const std::string cache_type, const uint64_t cache_size) {  
     pthread_t threads[MAIN_THREADS];
-    size_t count_per_epoch = 100;
+    size_t count_per_epoch = 1000;
     size_t epoch = 0;
-    std::vector<SimpleRequest> traces, prev_traces;
+    std::vector<std::vector<uint64_t>> prev_o_features;
+    std::vector<SimpleRequest> prev_traces;
 
     std::ifstream fstream;
-
     fstream.open(path);
 
     while(true) {
+        // std::cout << "[+] Getting traces for epoch: " << epoch << std::endl;
         std::vector<SimpleRequest> traces = get_traces(fstream, count_per_epoch);
 
         if (traces.empty()) {
             break;
         }
 
-        // create the args for the various thread calls. 
-        run_model_args rm_args(traces, epoch);
-        train_lightgbm_args tl_args(cache_type, cache_size);
-        if (!prev_traces.empty()) {
-            tl_args.set_traces(prev_traces);
-        }
+        LFOTrainUtil lfoTrainUtil(traces, cache_type, cache_size);
+        auto o_features = lfoTrainUtil.getFeatureVectors();
         
-        pthread_create(&threads[0], NULL, run_model, &rm_args);         // This is going to the LightGBM Model
-        pthread_create(&threads[1], NULL, train_lightgbm, &tl_args);    // This is going to train the new one.  
-        
-        // join all the threads. 
-        for (size_t i = 0; i < MAIN_THREADS; i++) {
-            pthread_join(threads[i], NULL);
+        // std::cout << "[+] Running the model with traces from window W[" << epoch << "]";
+        // std::cout << std::endl;
+        run_model(o_features, epoch);
+
+        if (!prev_o_features.empty()) {
+
+            // std::cout << "[+] Getting OPT decisions with traces from window W[" << epoch-1 << "]";
+            // std::cout << std::endl;
+            auto opt_decisions = get_opt_decisions(prev_traces, cache_size);
+
+            // std::cout << opt_decisions.size() << " " << prev_o_features.size();
+            // std::cout << std::endl;
+
+            // std::cout << "[+] Retraining model with decisions & traces from window W[" << epoch-1 << "]";
+            std::cout << std::endl;
+            retrain_model(opt_decisions, prev_o_features);
         }
 
-        cout << tl_args.features.size() << std::endl;
-
-        // To replace the old lightgbm model with the new one. 
-        //TODO: code here..
-
+        prev_o_features = o_features;
         prev_traces = traces;
+        ++epoch;
     }
     fstream.close();
 }
