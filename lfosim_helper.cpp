@@ -143,9 +143,7 @@ void run_model(std::ifstream fstream,
         if (epoch < 2) {
             // TODO:.. 
         } else {
-            std::vector<uint64_t> feature; // get features from the webcache pointer. 
-
-
+            std::vector<uint64_t> feature; // get features from the webcache pointer.
         }
     }
 
