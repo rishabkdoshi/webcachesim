@@ -130,19 +130,31 @@ std::vector<SimpleRequest> get_traces(std::ifstream & infile,
 }
 
 
-void run_model(std::ifstream fstream, 
+void run_model(std::ifstream& fstream, 
                size_t num_traces, 
                size_t epoch,
-               unique_ptr<Cache> webcache) {  
+               std::vector<std::vector<uint64_t>> prev_o_feature,
+               unique_ptr<Cache>& webcache) {  
     
     uint64_t time, size, id;
     uint64_t counter = 0;
     while (fstream >> time >> id >> size && ++counter <= num_traces) {
          // This is where we run the LRU cache. 
+        SimpleRequest req(id, size, time);
         if (epoch < 2) {
-            // TODO:.. 
+            if (webcache->lookup(&req)) {
+                // great...
+            } else {
+                webcache->admit(&req);
+            }
         } else {
+<<<<<<< Updated upstream
             std::vector<uint64_t> feature; // get features from the webcache pointer.
+=======
+            std::vector<uint64_t> feature; // create the feature. 
+            
+
+>>>>>>> Stashed changes
         }
     }
 
@@ -164,7 +176,7 @@ void run_lfo_sim(const char* path, const std::string cache_type, const uint64_t 
 
     while(true) {
 
-        run_model(fstream, batch_size, epoch, webcache);
+        run_model(fstream, batch_size, epoch, prev_o_features, webcache);
 
         if (!prev_o_features.empty()) {
             auto opt_decisions = get_opt_decisions(prev_traces, cache_size);

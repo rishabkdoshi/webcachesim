@@ -40,9 +40,29 @@ private:
     }
 
 public:
+<<<<<<< Updated upstream
     LFOTrainUtil(){
 
     }
+=======
+    virtual bool lookup(SimpleRequest* req);
+    virtual bool lookup(std::vector<uint64_t> ofeature, IdType id);
+    virtual void admit(SimpleRequest* req);
+    virtual void admit(std::vector<uint64_t> ofeatures);
+    virtual void evict(SimpleRequest* req);
+    virtual void evict(std::vector<uint64_t> ofeature);
+    virtual void evict();
+    virtual SimpleRequest* evict_return();
+
+    LFOTrainUtil() : Cache() {
+    }
+
+    LFOTrainUtil(uint64_t cache_size) : Cache() {
+        setSize(cache_size);
+    }
+
+};
+>>>>>>> Stashed changes
 
     ~LFOTrainUtil(){
 
