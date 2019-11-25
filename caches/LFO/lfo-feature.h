@@ -77,9 +77,24 @@ public:
     void setTimestamp(int timestamp) { _timestamp = timestamp; }
     uint64_t getAvailableCacheSize() const { return _available_cache_size; }
     void setLabel(uint64_t label) { _label = label; }
-    std::pair<IdType, vector<uint64_t>> getFeatureVector() const;
 
+    std::pair<IdType, vector<uint64_t>> getFeatureVector() const {
+        vector<uint64_t> features;
+        features.push_back(_size);
+        features.push_back(getRetrievalCost());
+        features.push_back(_available_cache_size);
 
+        for(int i=_time_gap_list.size();i<50;i++)
+            features.push_back(MISSING_TIME_GAP);
+
+        for (auto it = _time_gap_list.begin(); it != _time_gap_list.end(); ++it){
+            features.push_back(*it);
+        }
+
+        // features.push_back(_label);
+
+        return std::make_pair(_id, features);
+    }
     // Caching policies
     
 };
