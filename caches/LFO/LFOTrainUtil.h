@@ -18,10 +18,11 @@ typedef std::list<CacheObject>::iterator ListIteratorType;
 typedef std::unordered_map<CacheObject, ListIteratorType> lfoCacheMapType;
 
 class LFOTrainUtil : Cache {
+
 private:
     vector<SimpleRequest> _reqs;
     static vector<uint64_t> getUpdatedTimeGapList(SimpleRequest r, LFOFeature lfoFeature);
-    void createFeatures(vector<SimpleRequest> reqs);
+    LFOFeature getLFOFeature(SimpleRequest r);
     bool getCacheHitOrMiss(SimpleRequest r);
     std::list<CacheObject> _cacheList;
     // map to find objects in list
@@ -29,25 +30,23 @@ private:
 
     //map from objectId to list of LFO features
     unordered_map<uint64_t, vector<LFOFeature>> _requestToFeatureMap;
-    vector<vector<uint64_t>> _features;
     virtual void hit(lfoCacheMapType::const_iterator it, uint64_t size);
 
 public:
-    vector<vector<uint64_t>> getFeatureVectors();
     virtual bool lookup(SimpleRequest* req);
     virtual bool lookup(std::vector<uint64_t> ofeature, IdType id);
     virtual void admit(SimpleRequest* req);
     virtual void admit(vector<vector<uint64_t>> ofeatures);
     virtual void evict(SimpleRequest* req);
+    virtual void evict();
+    virtual SimpleRequest* evict_return();
 
-    // LFOTrainUtil(vector<SimpleRequest> reqs, string cacheType, uint64_t cacheSize): _reqs(reqs){
-    //     _trainingCache =  (Cache::create_unique(cacheType));
-    //     _trainingCache->setSize(cacheSize);
-    //     createFeatures(reqs);
-    // }
+    LFOTrainUtil() : Cache() {
+
+    }
 };
 
-static Factory<LFOTrainUtil> factoryLRU("LFO"); 
+static Factory<LFOTrainUtil> factoryLFO("LFO");
 
 
 #endif //WEBCACHESIM_LFOTRAINUTIL_H

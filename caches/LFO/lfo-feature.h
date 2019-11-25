@@ -52,13 +52,20 @@ public:
         _optimizationGoal = BYTE_HIT_RATIO;
     }
 
-    LFOFeature(SimpleRequest simpleRequest, vector<uint64_t> time_gap_list, uint64_t available_cache_size);
+    LFOFeature(SimpleRequest simpleRequest, vector<uint64_t> time_gap_list, uint64_t available_cache_size)
+        : _id(simpleRequest.getId()),
+        _size(simpleRequest.getSize()),
+        _timestamp(simpleRequest.getTimestamp()),
+        _time_gap_list(time_gap_list),
+        _available_cache_size(available_cache_size) {
+        _optimizationGoal = BYTE_HIT_RATIO;
+    }
+
     // Get request object id
     IdType getId() const { return _id; }
     // Get request size in bytes
     uint64_t getSize() const { return _size; }
     uint64_t getRetrievalCost() const {
-        if(_optimizationGoal == OBJECT_HIT_RATIO) return 1;
         if(_optimizationGoal == BYTE_HIT_RATIO) return getSize();
         return 1;
     }

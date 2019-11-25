@@ -5,9 +5,8 @@
 #include "LFOTrainUtil.h"
 #include "vector"
 
-void LFOTrainUtil::createFeatures(vector<SimpleRequest> reqs) {
-    
-    for(SimpleRequest r : reqs){
+LFOFeature LFOTrainUtil::getLFOFeature(SimpleRequest r) {
+
         auto it = _requestToFeatureMap.find(r.getId());
 
         if(it != _requestToFeatureMap.end()){
@@ -16,19 +15,15 @@ void LFOTrainUtil::createFeatures(vector<SimpleRequest> reqs) {
             LFOFeature prevFeature = featureList.at(size - 1);
             LFOFeature newLfoFeature(r, getUpdatedTimeGapList(r, prevFeature), getFreeBytes());
             it->second.push_back(newLfoFeature);
-            
-            _features.push_back(newLfoFeature.getFeatureVector().second);
+            return newLfoFeature;
         }else{
             vector<LFOFeature> featureList;
             vector<uint64_t> newTimeGapList;
             LFOFeature lfoFeature(r,newTimeGapList, getFreeBytes());
             (featureList).push_back(lfoFeature);
             _requestToFeatureMap.insert({r.getId(),featureList});
-
-            _features.push_back(lfoFeature.getFeatureVector().second);
+            return lfoFeature;
         }
-    }
-
 }
 
 vector<uint64_t> LFOTrainUtil::getUpdatedTimeGapList(SimpleRequest r, LFOFeature lfoFeature){
@@ -48,19 +43,6 @@ vector<uint64_t> LFOTrainUtil::getUpdatedTimeGapList(SimpleRequest r, LFOFeature
     }
 
     return newTimeGapList;
-}
-
-vector<vector<uint64_t>> LFOTrainUtil::getFeatureVectors() {
-    // vector<vector<uint64_t>> featureVectors;
-
-    // for(auto it = _requestToFeatureMap.begin(); it != _requestToFeatureMap.end(); ++it){
-    //     auto LFOFeatureList = it->second;
-
-    //     for(auto feature = LFOFeatureList.begin(); feature != LFOFeatureList.end(); ++feature){
-    //         featureVectors.push_back((*feature).getFeatureVector());
-    //     }
-    // }
-    return _features;
 }
 
 void LFOTrainUtil::hit(lfoCacheMapType::const_iterator it, uint64_t size) {
@@ -91,4 +73,15 @@ void LFOTrainUtil::admit(std::vector<std::vector<uint64_t>> ofeature) {
 
 void LFOTrainUtil::evict(SimpleRequest* req) {
 
+}
+
+SimpleRequest* LFOTrainUtil::evict_return()
+{
+    // evict least popular (i.e. last element)
+    return NULL;
+}
+
+void LFOTrainUtil::evict()
+{
+    evict_return();
 }
