@@ -130,20 +130,31 @@ std::vector<SimpleRequest> get_traces(std::ifstream & infile,
 }
 
 
-void run_model(std::ifstream fstream, 
+void run_model(std::ifstream& fstream, 
                size_t num_traces, 
-               size_t epoch, 
-               std::vector<std::vector<uint64_t>> & prev_o_features,
-               unique_ptr<Cache> webcache) {  
+               size_t epoch,
+               std::vector<std::vector<uint64_t>> prev_o_feature,
+               unique_ptr<Cache>& webcache) {  
     
     uint64_t time, size, id;
     uint64_t counter = 0;
     while (fstream >> time >> id >> size && ++counter <= num_traces) {
          // This is where we run the LRU cache. 
+        SimpleRequest req(id, size, time);
         if (epoch < 2) {
-            // TODO:.. 
+            if (webcache->lookup(&req)) {
+                // great...
+            } else {
+                webcache->admit(&req);
+            }
         } else {
+<<<<<<< Updated upstream
             std::vector<uint64_t> feature; // get features from the webcache pointer.
+=======
+            std::vector<uint64_t> feature; // create the feature. 
+            
+
+>>>>>>> Stashed changes
         }
     }
 
@@ -152,7 +163,7 @@ void run_model(std::ifstream fstream,
 
 void run_lfo_sim(const char* path, const std::string cache_type, const uint64_t cache_size) {  
     pthread_t threads[MAIN_THREADS];
-    size_t count_per_epoch = 1000;
+    size_t batch_size = 1000;
     size_t epoch = 0;
     std::vector<std::vector<uint64_t>> prev_o_features;
     std::vector<SimpleRequest> prev_traces;
@@ -160,12 +171,12 @@ void run_lfo_sim(const char* path, const std::string cache_type, const uint64_t 
     std::ifstream fstream;
     fstream.open(path);
 
-    // Initially. 
+    // Initially the Caching technique is LRU. 
     unique_ptr<Cache> webcache = (Cache::create_unique("LRU"));
 
     while(true) {
-    
-        // run_model(o_features, epoch);
+
+        run_model(fstream, batch_size, epoch, prev_o_features, webcache);
 
         if (!prev_o_features.empty()) {
             auto opt_decisions = get_opt_decisions(prev_traces, cache_size);
