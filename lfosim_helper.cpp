@@ -148,13 +148,9 @@ void run_model(std::ifstream& fstream,
                 webcache->admit(&req);
             }
         } else {
-<<<<<<< Updated upstream
-            std::vector<uint64_t> feature; // get features from the webcache pointer.
-=======
-            std::vector<uint64_t> feature; // create the feature. 
+            std::vector<uint64_t> feature; // create the feature.
             
 
->>>>>>> Stashed changes
         }
     }
 

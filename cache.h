@@ -50,11 +50,6 @@ public:
     virtual void evict(SimpleRequest* req) = 0;
     virtual void evict() = 0;
 
-    virtual bool lookup(std::vector<uint64_t> feature, uint64_t id) {}
-    virtual void admit(std::vector<uint64_t> ofeature, uint64_t) {}
-    virtual void evict(std::vector<uint64_t> ofeature) {}
-
-
 
     // configure cache parameters
     virtual void setSize(uint64_t cs) {
