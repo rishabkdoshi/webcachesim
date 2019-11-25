@@ -5,53 +5,73 @@
 #ifndef WEBCACHESIM_LFOTRAINUTIL_H
 #define WEBCACHESIM_LFOTRAINUTIL_H
 
-#include "../../cache.h"
 #include "request.h"
 #include "lfo-feature.h"
 #include "vector"
 #include "unordered_map"
-#include "../cache_object.h"
 #include <list>
+#include <cache.h>
 
 
-typedef std::list<CacheObject>::iterator ListIteratorType;
-typedef std::unordered_map<CacheObject, ListIteratorType> lfoCacheMapType;
-
-class LFOTrainUtil : Cache {
+class LFOTrainUtil {
 
 private:
-    static vector<uint64_t> getUpdatedTimeGapList(SimpleRequest r, LFOFeature lfoFeature);
-    LFOFeature getLFOFeature(SimpleRequest r);
-    bool getCacheHitOrMiss(SimpleRequest r);
-    std::list<CacheObject> _cacheList;
-    // map to find objects in list
-    lfoCacheMapType _cacheMap;
 
     //map from objectId to list of LFO features
-    unordered_map<uint64_t, vector<LFOFeature>> _requestToFeatureMap;
-    virtual void hit(lfoCacheMapType::const_iterator it, uint64_t size);
+    static unordered_map<uint64_t, vector<LFOFeature>> _requestToFeatureMap;
+
+    static vector<uint64_t> getUpdatedTimeGapList(SimpleRequest r, LFOFeature lfoFeature){
+        vector<uint64_t> oldTimeGapList = lfoFeature.getTimeGapList();
+        uint64_t diff = r.getTimestamp() - lfoFeature.getTimestamp();
+        vector<uint64_t> newTimeGapList;
+
+        for (vector<uint64_t>::iterator it=oldTimeGapList.begin(); it != oldTimeGapList.end(); ++it){
+            newTimeGapList.push_back((diff+(*it)));
+        }
+
+        //last request
+        newTimeGapList.push_back(diff);
+
+        if(newTimeGapList.size() > 50){
+            newTimeGapList.erase(newTimeGapList.begin());
+        }
+
+        return newTimeGapList;
+    }
 
 public:
-    virtual bool lookup(SimpleRequest* req);
-    virtual bool lookup(std::vector<uint64_t> ofeature, IdType id);
-    virtual void admit(SimpleRequest* req);
-    virtual void admit(vector<vector<uint64_t>> ofeatures);
-    virtual void evict(SimpleRequest* req);
-    virtual void evict();
-<<<<<<< Updated upstream
-    virtual SimpleRequest* evict_return();
+    LFOTrainUtil(){
 
-    LFOTrainUtil() : Cache() {
+    }
 
-=======
+    ~LFOTrainUtil(){
 
-    LFOTrainUtil(uint64_t cacheSize) {
-        setSize(cacheSize);
->>>>>>> Stashed changes
+    }
+
+    void reset(){
+        _requestToFeatureMap.clear();
+    }
+
+    static LFOFeature getLFOFeature(SimpleRequest r, Cache cache){
+        auto it = _requestToFeatureMap.find(r.getId());
+
+        if(it != _requestToFeatureMap.end()){
+            vector<LFOFeature> featureList = it->second;
+            int size = featureList.size();
+            LFOFeature prevFeature = featureList.at(size - 1);
+            LFOFeature newLfoFeature(r, getUpdatedTimeGapList(r, prevFeature), cache.getFreeBytes());
+            it->second.push_back(newLfoFeature);
+            return newLfoFeature;
+        }else{
+            vector<LFOFeature> featureList;
+            vector<uint64_t> newTimeGapList;
+            LFOFeature lfoFeature(r,newTimeGapList, cache.getFreeBytes());
+            (featureList).push_back(lfoFeature);
+            _requestToFeatureMap.insert({r.getId(),featureList});
+            return lfoFeature;
+        }
     }
 };
-
-static Factory<LFOTrainUtil> factoryLFO("LFO");
 
 
 #endif //WEBCACHESIM_LFOTRAINUTIL_H
