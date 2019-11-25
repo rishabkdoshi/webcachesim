@@ -28,6 +28,17 @@ struct CacheObject
     bool operator==(const CacheObject &rhs) const {
         return (rhs.id == id) && (rhs.size == size);
     }
+
+//    bool operator< (const CacheObject &rhs) const
+//    {
+//        return dvar < rhs.dvar;
+//    }
+//
+//    bool operator> (const CacheObject& rhs)
+//    {
+//        return dvar > rhs.dvar;
+//    }
+
 };
 
 

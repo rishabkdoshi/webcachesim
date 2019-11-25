@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <list>
 #include <random>
+#include <caches/LFO/lfo-feature.h>
 #include "../cache.h"
 #include "cache_object.h"
 #include "adaptsize_const.h" /* AdaptSize constants */
@@ -35,8 +36,8 @@ public:
     {
     }
 
-    virtual bool lookup(SimpleRequest* req, uint64_t* featureVector = nullptr);
-    virtual void admit(SimpleRequest* req, uint64_t* featureVector = nullptr);
+    virtual bool lookup(SimpleRequest* req, LFOFeature *lfoFeature = nullptr);
+    virtual void admit(SimpleRequest* req, LFOFeature *lfoFeature = nullptr);
     virtual void evict(SimpleRequest* req);
     virtual void evict();
     virtual SimpleRequest* evict_return();
@@ -80,7 +81,7 @@ public:
     }
 
     virtual void setPar(std::string parName, std::string parValue);
-    virtual bool lookup(SimpleRequest* req, uint64_t* featureVector = nullptr);
+    virtual bool lookup(SimpleRequest* req, LFOFeature *featureVector = nullptr);
     virtual void admit(SimpleRequest* req, uint64_t* featureVector = nullptr);
 };
 
@@ -138,7 +139,7 @@ public:
     }
 
     virtual void setPar(std::string parName, std::string parValue);
-    virtual bool lookup(SimpleRequest*,uint64_t* featureVector = nullptr);
+    virtual bool lookup(SimpleRequest*, LFOFeature *lfoFeature = nullptr);
     virtual void admit(SimpleRequest*,uint64_t* featureVector = nullptr);
 
 private: 
@@ -199,8 +200,8 @@ public:
     }
 
     virtual void setSize(uint64_t cs);
-    virtual bool lookup(SimpleRequest* req,uint64_t* featureVector = nullptr);
-    virtual void admit(SimpleRequest* req,uint64_t* featureVector = nullptr);
+    virtual bool lookup(SimpleRequest* req,LFOFeature* lfoFeature = nullptr);
+    virtual void admit(SimpleRequest* req,LFOFeature* lfoFeature = nullptr);
     virtual void segment_admit(uint8_t idx, SimpleRequest* req);
     virtual void evict(SimpleRequest* req);
     virtual void evict();

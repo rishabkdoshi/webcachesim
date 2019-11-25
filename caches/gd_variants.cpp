@@ -5,7 +5,7 @@
 /*
   GD: greedy dual eviction (base class)
 */
-bool GreedyDualBase::lookup(SimpleRequest* req, uint64_t* featureVector)
+bool GreedyDualBase::lookup(SimpleRequest* req, LFOFeature* lfoFeature)
 {
     CacheObject obj(req);
     auto it = _cacheMap.find(obj);
@@ -18,7 +18,7 @@ bool GreedyDualBase::lookup(SimpleRequest* req, uint64_t* featureVector)
     return false;
 }
 
-void GreedyDualBase::admit(SimpleRequest* req, uint64_t* featureVector)
+void GreedyDualBase::admit(SimpleRequest* req, LFOFeature* lfoFeature)
 {
     const uint64_t size = req->getSize();
     // object feasible to store?
@@ -103,7 +103,7 @@ long double GDSCache::ageValue(SimpleRequest* req)
 /*
   Greedy Dual Size Frequency policy
 */
-bool GDSFCache::lookup(SimpleRequest* req, uint64_t* featureVector)
+bool GDSFCache::lookup(SimpleRequest* req, LFOFeature* lfoFeature)
 {
     bool hit = GreedyDualBase::lookup(req);
     CacheObject obj(req);
@@ -142,7 +142,7 @@ void LRUKCache::setPar(std::string parName, std::string parValue) {
 }
 
 
-bool LRUKCache::lookup(SimpleRequest* req, uint64_t* featureVector)
+bool LRUKCache::lookup(SimpleRequest* req, LFOFeature* lfoFeature)
 {
     CacheObject obj(req);
     _curTime++;
@@ -188,7 +188,7 @@ long double LRUKCache::ageValue(SimpleRequest* req)
 /*
   LFUDA
 */
-bool LFUDACache::lookup(SimpleRequest* req, uint64_t* featureVector)
+bool LFUDACache::lookup(SimpleRequest* req, LFOFeature* featureVector)
 {
     bool hit = GreedyDualBase::lookup(req);
     CacheObject obj(req);

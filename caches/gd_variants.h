@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <map>
 #include <queue>
+#include <caches/LFO/lfo-feature.h>
 #include "cache.h"
 #include "cache_object.h"
 
@@ -40,8 +41,8 @@ public:
     {
     }
 
-    virtual bool lookup(SimpleRequest* req, uint64_t* featureVector = nullptr);
-    virtual void admit(SimpleRequest* req, uint64_t* featureVector = nullptr);
+    virtual bool lookup(SimpleRequest* req, LFOFeature* lfoFeature = nullptr);
+    virtual void admit(SimpleRequest* req, LFOFeature* lfoFeature = nullptr);
     virtual void evict(SimpleRequest* req);
     virtual void evict();
 };
@@ -87,7 +88,7 @@ public:
     {
     }
 
-    virtual bool lookup(SimpleRequest* req, uint64_t* featureVector = nullptr);
+    virtual bool lookup(SimpleRequest* req, LFOFeature* featureVector = nullptr);
 };
 
 static Factory<GDSFCache> factoryGDSF("GDSF");
@@ -113,7 +114,7 @@ public:
     }
 
     virtual void setPar(std::string parName, std::string parValue);
-    virtual bool lookup(SimpleRequest* req, uint64_t* featureVector= nullptr);
+    virtual bool lookup(SimpleRequest* req, LFOFeature* lfoFeature= nullptr);
     virtual void evict(SimpleRequest* req);
     virtual void evict();
 };
@@ -139,7 +140,7 @@ public:
     {
     }
 
-    virtual bool lookup(SimpleRequest* req, uint64_t* featureVector = nullptr);
+    virtual bool lookup(SimpleRequest* req, LFOFeature* lfoFeature = nullptr);
 };
 
 static Factory<LFUDACache> factoryLFUDA("LFUDA");

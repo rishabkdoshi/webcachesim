@@ -6,39 +6,55 @@
 #define WEBCACHESIM_LFOCACHE_H
 
 
-#include <cache.h>
-#include <caches/cache_object.h>
+#include "cache.h"
+#include "caches/cache_object.h"
 #include <list>
+#include "lfo-feature.h"
+#include "LightGBMHelper.h"
+#include <queue>
 
-typedef std::list<CacheObject>::iterator ListIteratorType;
-typedef std::unordered_map<CacheObject, ListIteratorType> lfoCacheMapType;
+typedef std::unordered_map<IdType, CacheObject> lfoCacheMapType;
+typedef double dvarType;
 
 class LFOCache : Cache {
+private:
+    struct GreaterCacheObject {
+        bool operator()(CacheObject const& p1, CacheObject const& p2)
+        {
+            // return "true" if "p1" is ordered
+            // before "p2", for example:
+            return p1.dvar > p2.dvar;
+        }
+    };
 
 protected:
-    // list for recency order
-    // std::list is a container, usually, implemented as a doubly-linked list
-    std::list<CacheObject> _cacheList;
+
     // map to find objects in list
     lfoCacheMapType _cacheMap;
 
-    virtual void hit(lfoCacheMapType::const_iterator it, uint64_t size);
+    //min pq to decide which cacheobject to evict
+    std::priority_queue<CacheObject, vector<CacheObject>, GreaterCacheObject> _cacheObjectMinpq;
+
+    LightGBMHelper _gbmHelper;
+
+    dvarType _threshold;
+
 
 public:
-    LFOCache()
-            : Cache()
+    LFOCache(dvarType threshold)
     {
+        _threshold = threshold;
     }
     virtual ~LFOCache()
     {
     }
 
-    virtual bool lookup(SimpleRequest* req);
-    virtual void admit(SimpleRequest* req);
+    virtual bool lookup(SimpleRequest* req, LFOFeature* lfoFeature);
+    virtual void admit(SimpleRequest* req, LFOFeature* lfoFeature);
     virtual void evict(SimpleRequest* req);
     virtual void evict();
     virtual SimpleRequest* evict_return();
-    virtual bool shouldAdmit();
+    virtual bool shouldAdmit(SimpleRequest *req, LFOFeature *lfoFeature);
 
 };
 

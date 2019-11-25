@@ -24,7 +24,7 @@ static inline double oP2(double T, double l, double p) {
 /*
   LRU: Least Recently Used eviction
 */
-bool LRUCache::lookup(SimpleRequest* req, uint64_t* featureVector)
+bool LRUCache::lookup(SimpleRequest* req, LFOFeature *featureVector)
 {
     // CacheObject: defined in cache_object.h 
     CacheObject obj(req);
@@ -39,7 +39,7 @@ bool LRUCache::lookup(SimpleRequest* req, uint64_t* featureVector)
     return false;
 }
 
-void LRUCache::admit(SimpleRequest* req, uint64_t* featureVector)
+void LRUCache::admit(SimpleRequest* req, LFOFeature *featureVector)
 {
     const uint64_t size = req->getSize();
     // object feasible to store?
@@ -133,7 +133,7 @@ void FilterCache::setPar(std::string parName, std::string parValue) {
 }
 
 
-bool FilterCache::lookup(SimpleRequest* req, uint64_t* featureVector)
+bool FilterCache::lookup(SimpleRequest* req, LFOFeature *lfoFeature)
 {
     CacheObject obj(req);
     _filter[obj]++;
@@ -238,7 +238,7 @@ void AdaptSizeCache::setPar(std::string parName, std::string parValue) {
     }
 }
 
-bool AdaptSizeCache::lookup(SimpleRequest* req, uint64_t* featureVector)
+bool AdaptSizeCache::lookup(SimpleRequest* req, LFOFeature *featureVector)
 {
     reconfigure(); 
 
@@ -502,7 +502,7 @@ void S4LRUCache::setSize(uint64_t cs) {
     }
 }
 
-bool S4LRUCache::lookup(SimpleRequest* req, uint64_t* featureVector)
+bool S4LRUCache::lookup(SimpleRequest* req, LFOFeature* lfoFeature)
 {
     for(int i=0; i<4; i++) {
         if(segments[i].lookup(req)) {
@@ -518,7 +518,7 @@ bool S4LRUCache::lookup(SimpleRequest* req, uint64_t* featureVector)
     return false;
 }
 
-void S4LRUCache::admit(SimpleRequest* req, uint64_t* featureVector)
+void S4LRUCache::admit(SimpleRequest* req, LFOFeature* lfoFeature)
 {
     segments[0].admit(req);
 }

@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <memory>
 #include "request.h"
+#include "caches/LFO/lfo-feature.h"
 
 // uncomment to enable cache debugging:
 // #define CDEBUG 1
@@ -23,7 +24,6 @@ inline void logMessage(std::string m, double x, double y, double z) {
 #else
 #define LOG(m,x,y,z)
 #endif
-
 
 
 class Cache;
@@ -45,8 +45,8 @@ public:
     virtual ~Cache(){};
 
     // main cache management functions (to be defined by a policy)
-    virtual bool lookup(SimpleRequest* req, uint64_t* featureVector = nullptr) = 0;
-    virtual void admit(SimpleRequest* req, uint64_t* featureVector = nullptr) = 0;
+    virtual bool lookup(SimpleRequest* req, LFOFeature *lfoFeature = nullptr) = 0;
+    virtual void admit(SimpleRequest* req, LFOFeature *lfoFeature = nullptr) = 0;
     virtual void evict(SimpleRequest* req) = 0;
     virtual void evict() = 0;
 
@@ -70,7 +70,7 @@ public:
         return (_cacheSize - _currentSize);
     }
 
-    bool shouldAdmit(SimpleRequest* req){
+    bool shouldAdmit(SimpleRequest *req, LFOFeature *lfoFeature) {
         return true;
     }
 
