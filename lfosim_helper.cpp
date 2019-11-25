@@ -130,14 +130,25 @@ std::vector<SimpleRequest> get_traces(std::ifstream & infile,
 }
 
 
-void run_model(std::vector<std::vector<uint64_t>> ofeatures, size_t epoch) {
-    if (epoch < 2) {
-        // Run LFU. 
-        unique_ptr<Cache> webcache = (Cache::create_unique("LRU"));
+void run_model(std::ifstream fstream, 
+               size_t num_traces, 
+               size_t epoch, 
+               std::vector<std::vector<uint64_t>> & prev_o_features,
+               unique_ptr<Cache> webcache) {  
+    
+    uint64_t time, size, id;
+    uint64_t counter = 0;
+    while (fstream >> time >> id >> size && ++counter <= num_traces) {
+         // This is where we run the LRU cache. 
+        if (epoch < 2) {
+            // TODO:.. 
+        } else {
+            std::vector<uint64_t> feature; // get features from the webcache pointer. 
 
-    } else {
-        // Run the most currently trained LFO.
+
+        }
     }
+
 }
 
 
@@ -151,37 +162,20 @@ void run_lfo_sim(const char* path, const std::string cache_type, const uint64_t 
     std::ifstream fstream;
     fstream.open(path);
 
+    // Initially. 
+    unique_ptr<Cache> webcache = (Cache::create_unique("LRU"));
+
     while(true) {
-        // std::cout << "[+] Getting traces for epoch: " << epoch << std::endl;
-        std::vector<SimpleRequest> traces = get_traces(fstream, count_per_epoch);
-
-        if (traces.empty()) {
-            break;
-        }
-
-        LFOTrainUtil lfoTrainUtil(traces, cache_type, cache_size);
-        auto o_features = lfoTrainUtil.getFeatureVectors();
-        
-        // std::cout << "[+] Running the model with traces from window W[" << epoch << "]";
-        // std::cout << std::endl;
-        run_model(o_features, epoch);
+    
+        // run_model(o_features, epoch);
 
         if (!prev_o_features.empty()) {
-
-            // std::cout << "[+] Getting OPT decisions with traces from window W[" << epoch-1 << "]";
-            // std::cout << std::endl;
             auto opt_decisions = get_opt_decisions(prev_traces, cache_size);
-
-            // std::cout << opt_decisions.size() << " " << prev_o_features.size();
-            // std::cout << std::endl;
-
-            // std::cout << "[+] Retraining model with decisions & traces from window W[" << epoch-1 << "]";
-            std::cout << std::endl;
             retrain_model(opt_decisions, prev_o_features);
         }
 
-        prev_o_features = o_features;
-        prev_traces = traces;
+        // prev_o_features = o_features;
+        // prev_traces = traces;
         ++epoch;
     }
     fstream.close();

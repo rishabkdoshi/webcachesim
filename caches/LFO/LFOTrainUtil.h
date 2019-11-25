@@ -20,7 +20,6 @@ typedef std::unordered_map<CacheObject, ListIteratorType> lfoCacheMapType;
 class LFOTrainUtil : Cache {
 
 private:
-    vector<SimpleRequest> _reqs;
     static vector<uint64_t> getUpdatedTimeGapList(SimpleRequest r, LFOFeature lfoFeature);
     LFOFeature getLFOFeature(SimpleRequest r);
     bool getCacheHitOrMiss(SimpleRequest r);
@@ -39,10 +38,16 @@ public:
     virtual void admit(vector<vector<uint64_t>> ofeatures);
     virtual void evict(SimpleRequest* req);
     virtual void evict();
+<<<<<<< Updated upstream
     virtual SimpleRequest* evict_return();
 
     LFOTrainUtil() : Cache() {
 
+=======
+
+    LFOTrainUtil(uint64_t cacheSize) {
+        setSize(cacheSize);
+>>>>>>> Stashed changes
     }
 };
 
