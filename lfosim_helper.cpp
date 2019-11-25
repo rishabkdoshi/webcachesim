@@ -132,8 +132,7 @@ std::vector<SimpleRequest> get_traces(std::ifstream & infile,
 
 void run_model(std::ifstream fstream, 
                size_t num_traces, 
-               size_t epoch, 
-               std::vector<std::vector<uint64_t>> & prev_o_features,
+               size_t epoch,
                unique_ptr<Cache> webcache) {  
     
     uint64_t time, size, id;
@@ -154,7 +153,7 @@ void run_model(std::ifstream fstream,
 
 void run_lfo_sim(const char* path, const std::string cache_type, const uint64_t cache_size) {  
     pthread_t threads[MAIN_THREADS];
-    size_t count_per_epoch = 1000;
+    size_t batch_size = 1000;
     size_t epoch = 0;
     std::vector<std::vector<uint64_t>> prev_o_features;
     std::vector<SimpleRequest> prev_traces;
@@ -162,12 +161,12 @@ void run_lfo_sim(const char* path, const std::string cache_type, const uint64_t 
     std::ifstream fstream;
     fstream.open(path);
 
-    // Initially. 
+    // Initially the Caching technique is LRU. 
     unique_ptr<Cache> webcache = (Cache::create_unique("LRU"));
 
     while(true) {
-    
-        // run_model(o_features, epoch);
+
+        run_model(fstream, batch_size, epoch, webcache);
 
         if (!prev_o_features.empty()) {
             auto opt_decisions = get_opt_decisions(prev_traces, cache_size);
