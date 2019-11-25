@@ -35,8 +35,8 @@ public:
     {
     }
 
-    virtual bool lookup(SimpleRequest* req);
-    virtual void admit(SimpleRequest* req);
+    virtual bool lookup(SimpleRequest* req, uint64_t* featureVector = nullptr);
+    virtual void admit(SimpleRequest* req, uint64_t* featureVector = nullptr);
     virtual void evict(SimpleRequest* req);
     virtual void evict();
     virtual SimpleRequest* evict_return();
@@ -80,8 +80,8 @@ public:
     }
 
     virtual void setPar(std::string parName, std::string parValue);
-    virtual bool lookup(SimpleRequest* req);
-    virtual void admit(SimpleRequest* req);
+    virtual bool lookup(SimpleRequest* req, uint64_t* featureVector = nullptr);
+    virtual void admit(SimpleRequest* req, uint64_t* featureVector = nullptr);
 };
 
 static Factory<FilterCache> factoryFilter("Filter");
@@ -101,7 +101,7 @@ public:
     }
 
     virtual void setPar(std::string parName, std::string parValue);
-    virtual void admit(SimpleRequest* req);
+    virtual void admit(SimpleRequest* req, uint64_t* featureVector = nullptr);
 };
 
 static Factory<ThLRUCache> factoryThLRU("ThLRU");
@@ -121,7 +121,7 @@ public:
     }
 
     virtual void setPar(std::string parName, std::string parValue);
-    virtual void admit(SimpleRequest* req);
+    virtual void admit(SimpleRequest* req, uint64_t* featureVector = nullptr);
 };
 
 static Factory<ExpLRUCache> factoryExpLRU("ExpLRU");
@@ -138,8 +138,8 @@ public:
     }
 
     virtual void setPar(std::string parName, std::string parValue);
-    virtual bool lookup(SimpleRequest*);
-    virtual void admit(SimpleRequest*);
+    virtual bool lookup(SimpleRequest*,uint64_t* featureVector = nullptr);
+    virtual void admit(SimpleRequest*,uint64_t* featureVector = nullptr);
 
 private: 
     double _cParam; //
@@ -199,8 +199,8 @@ public:
     }
 
     virtual void setSize(uint64_t cs);
-    virtual bool lookup(SimpleRequest* req);
-    virtual void admit(SimpleRequest* req);
+    virtual bool lookup(SimpleRequest* req,uint64_t* featureVector = nullptr);
+    virtual void admit(SimpleRequest* req,uint64_t* featureVector = nullptr);
     virtual void segment_admit(uint8_t idx, SimpleRequest* req);
     virtual void evict(SimpleRequest* req);
     virtual void evict();

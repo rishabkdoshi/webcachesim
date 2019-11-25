@@ -40,8 +40,8 @@ public:
     {
     }
 
-    virtual bool lookup(SimpleRequest* req);
-    virtual void admit(SimpleRequest* req);
+    virtual bool lookup(SimpleRequest* req, uint64_t* featureVector = nullptr);
+    virtual void admit(SimpleRequest* req, uint64_t* featureVector = nullptr);
     virtual void evict(SimpleRequest* req);
     virtual void evict();
 };
@@ -87,7 +87,7 @@ public:
     {
     }
 
-    virtual bool lookup(SimpleRequest* req);
+    virtual bool lookup(SimpleRequest* req, uint64_t* featureVector = nullptr);
 };
 
 static Factory<GDSFCache> factoryGDSF("GDSF");
@@ -113,7 +113,7 @@ public:
     }
 
     virtual void setPar(std::string parName, std::string parValue);
-    virtual bool lookup(SimpleRequest* req);
+    virtual bool lookup(SimpleRequest* req, uint64_t* featureVector= nullptr);
     virtual void evict(SimpleRequest* req);
     virtual void evict();
 };
@@ -139,7 +139,7 @@ public:
     {
     }
 
-    virtual bool lookup(SimpleRequest* req);
+    virtual bool lookup(SimpleRequest* req, uint64_t* featureVector = nullptr);
 };
 
 static Factory<LFUDACache> factoryLFUDA("LFUDA");

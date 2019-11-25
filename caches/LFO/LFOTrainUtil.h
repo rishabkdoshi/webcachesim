@@ -65,6 +65,7 @@ public:
         }else{
             vector<LFOFeature> featureList;
             vector<uint64_t> newTimeGapList;
+//            uint64_t *a = newTimeGapList.data();
             LFOFeature lfoFeature(r,newTimeGapList, cache.getFreeBytes());
             (featureList).push_back(lfoFeature);
             _requestToFeatureMap.insert({r.getId(),featureList});

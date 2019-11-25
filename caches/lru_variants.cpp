@@ -24,7 +24,7 @@ static inline double oP2(double T, double l, double p) {
 /*
   LRU: Least Recently Used eviction
 */
-bool LRUCache::lookup(SimpleRequest* req)
+bool LRUCache::lookup(SimpleRequest* req, uint64_t* featureVector)
 {
     // CacheObject: defined in cache_object.h 
     CacheObject obj(req);
@@ -39,7 +39,7 @@ bool LRUCache::lookup(SimpleRequest* req)
     return false;
 }
 
-void LRUCache::admit(SimpleRequest* req)
+void LRUCache::admit(SimpleRequest* req, uint64_t* featureVector)
 {
     const uint64_t size = req->getSize();
     // object feasible to store?
@@ -133,14 +133,14 @@ void FilterCache::setPar(std::string parName, std::string parValue) {
 }
 
 
-bool FilterCache::lookup(SimpleRequest* req)
+bool FilterCache::lookup(SimpleRequest* req, uint64_t* featureVector)
 {
     CacheObject obj(req);
     _filter[obj]++;
     return LRUCache::lookup(req);
 }
 
-void FilterCache::admit(SimpleRequest* req)
+void FilterCache::admit(SimpleRequest* req, uint64_t* featureVector)
 {
     CacheObject obj(req);
     if (_filter[obj] <= _nParam) {
@@ -170,7 +170,7 @@ void ThLRUCache::setPar(std::string parName, std::string parValue) {
 }
 
 
-void ThLRUCache::admit(SimpleRequest* req)
+void ThLRUCache::admit(SimpleRequest* req, uint64_t* featureVector)
 {
     const uint64_t size = req->getSize();
     // admit if size < threshold
@@ -201,7 +201,7 @@ void ExpLRUCache::setPar(std::string parName, std::string parValue) {
 
 
 
-void ExpLRUCache::admit(SimpleRequest* req)
+void ExpLRUCache::admit(SimpleRequest* req, uint64_t* featureVector)
 {
     const double size = req->getSize();
     // admit to cache with probablity that is exponentially decreasing with size
@@ -238,7 +238,7 @@ void AdaptSizeCache::setPar(std::string parName, std::string parValue) {
     }
 }
 
-bool AdaptSizeCache::lookup(SimpleRequest* req)
+bool AdaptSizeCache::lookup(SimpleRequest* req, uint64_t* featureVector)
 {
     reconfigure(); 
 
@@ -275,7 +275,7 @@ bool AdaptSizeCache::lookup(SimpleRequest* req)
     return LRUCache::lookup(req);
 }
 
-void AdaptSizeCache::admit(SimpleRequest* req)
+void AdaptSizeCache::admit(SimpleRequest* req, uint64_t* featureVector)
 {
     double roll = _uniform_real_distribution(globalGenerator);
     double admitProb = std::exp(-1.0 * double(req->getSize())/_cParam); 
@@ -502,7 +502,7 @@ void S4LRUCache::setSize(uint64_t cs) {
     }
 }
 
-bool S4LRUCache::lookup(SimpleRequest* req)
+bool S4LRUCache::lookup(SimpleRequest* req, uint64_t* featureVector)
 {
     for(int i=0; i<4; i++) {
         if(segments[i].lookup(req)) {
@@ -518,7 +518,7 @@ bool S4LRUCache::lookup(SimpleRequest* req)
     return false;
 }
 
-void S4LRUCache::admit(SimpleRequest* req)
+void S4LRUCache::admit(SimpleRequest* req, uint64_t* featureVector)
 {
     segments[0].admit(req);
 }
