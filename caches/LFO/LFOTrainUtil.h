@@ -44,11 +44,7 @@ public:
 
     }
 
-    ~LFOTrainUtil(){
-
-    }
-
-    void reset(){
+    void reset() {
         _requestToFeatureMap.clear();
     }
 
