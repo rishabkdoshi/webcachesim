@@ -100,24 +100,20 @@ int main(int argc, char **argv)
 
     // Run predictions
     int64_t predictionsLength;
-    double * predictions = new double[numPredicts];
+    double * predictions = new double[1];
+    double * allPredictions = new double[numPredicts];
 
-    int hasPredicted = LGBM_BoosterPredictForMat(boosterHandle, predictData, C_API_DTYPE_FLOAT64,
-        numPredicts, numFeats, 1, C_API_PREDICT_RAW_SCORE, -1, "", &predictionsLength, predictions);
-
-    std::cout << hasPredicted << '\n';
-
-    std::cout << predictionsLength << '\n';
-
-    if (predictionsLength != numPredicts) {
-        std::cout << "Prediction array failed for some entries\n";
-        return EXIT_FAILURE;
+    for (int i=0; i<numPredicts; i++){
+        int hasPredicted = LGBM_BoosterPredictForMatSingleRow(boosterHandle, predictData[i], C_API_DTYPE_FLOAT64,
+            numFeats, 1, C_API_PREDICT_RAW_SCORE, -1, "", &predictionsLength, predictions);
+        allPredictions[i] = predictions[0];
     }
+
     // compute error
     double err = 0;
     for (int i=0; i < numPredicts; i++)
     {
-        if (round(predictions[i]) != labels[i])
+        if (round(allPredictions[i]) != labels[i])
         {
             err++;
         }
