@@ -116,11 +116,6 @@ std::vector<double> get_opt_decisions(std::vector<SimpleRequest> traces,
 
 }
 
-void retrain_model(std::vector<uint64_t> opt_decisions,
-                   std::vector<std::vector<uint64_t>> o_features) {
-    cout << "Here we will retrain the model. " << std::endl;
-}
-
 
 std::vector<SimpleRequest> get_traces(std::ifstream & infile, 
                                       size_t count_per_epoch) {
@@ -148,11 +143,13 @@ int run_model(std::ifstream& fstream,
     size_t hits = 0;
     uint64_t counter = 0;
     SimpleRequest* req = new SimpleRequest(0, 0);
+
     while (!fstream.eof() && fstream >> time >> id >> size && ++counter <= num_traces) {
         SimpleRequest sr = SimpleRequest(id, size, time);
         prev_traces.push_back(sr);
         req = &sr;
         vector<double> o_feature;
+        // std::cout << "HELLO" << run_lfo << std::endl;
         if (!run_lfo) {
             LRUCache* lru_cache = (LRUCache *) cache;
             o_feature = lfoTrainUtil.getLFOFeature(*req, lru_cache->getFreeBytes()).getFeatureVector();
@@ -166,12 +163,24 @@ int run_model(std::ifstream& fstream,
             auto lfoFeature = lfoTrainUtil.getLFOFeature(*req, lfo_cache->getFreeBytes());
             o_feature = lfoFeature.getFeatureVector();
             if (lfo_cache->lookup(req, &lfoFeature)) {
+                cout << "Found the sob" << std::endl;
                 hits++;
             } else {
+                cout << "didn't find the sob" << std::endl;
                 lfo_cache->admit(req, &lfoFeature);
+                cout << "?????" << std::endl;
             }
+                 cout << "Wont come here" << endl;
         }
+        cout << "Will come here ? " << endl;
+         cout << "?????????????????????????" << std::endl;
         prev_o_features.push_back(o_feature);
+        
+ 
+        if (counter > num_traces) {
+            break;
+        }
+        counter++;
     }
 
     return hits;
@@ -180,8 +189,7 @@ int run_model(std::ifstream& fstream,
 
 
 void run_lfo_sim(const char* path, const std::string cache_type, const uint64_t cache_size) {  
-    pthread_t threads[MAIN_THREADS];
-    size_t batch_size = 1000;
+    size_t batch_size = 100;
     size_t epoch = 0;
     std::vector<std::vector<double>> prev_o_features;
     std::vector<SimpleRequest> prev_traces;
@@ -199,10 +207,14 @@ void run_lfo_sim(const char* path, const std::string cache_type, const uint64_t 
 
     while(true) {
 
+        if (epoch > 10) {
+            exit(0);
+        }
+
         size_t hits = run_model(fstream, batch_size, prev_o_features, cache, lfoTrainUtil, run_lfo, prev_traces);
         lfoTrainUtil.reset();
 
-        cout << epoch << ": " << double(hits)/batch_size << std::endl;
+        std::cout << epoch << ": " << double(hits)/batch_size << std::endl;
 
         if (!prev_o_features.empty()) {
             auto opt_decisions = get_opt_decisions(prev_traces, cache_size);
@@ -213,7 +225,6 @@ void run_lfo_sim(const char* path, const std::string cache_type, const uint64_t 
             }
             prev_o_features.clear();
         }
-        // exit(0);
         ++epoch;
 }
     fstream.close();

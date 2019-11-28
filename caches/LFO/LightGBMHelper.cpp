@@ -6,6 +6,7 @@
 #include "LFOCache.h"
 #include <LightGBM/c_api.h>
 #include "LightGBMHelper.h"
+#include <iostream>
 //typedef double dvarType;
 
 double LightGBMHelper::getUtility(const double *featureVector, const int featureLength){
@@ -23,7 +24,7 @@ double LightGBMHelper::getUtility(const double *featureVector, const int feature
         return *predictions;
 }
 
-void LightGBMHelper::train(const double **featureVector, const double *labels, const int numSamples, const int featureLength){
+int LightGBMHelper::train(const double **featureVector, const double *labels, const int numSamples, const int featureLength){
         int isdataSetLoaded;
 
         if (dataHandle == nullptr){
@@ -52,7 +53,8 @@ void LightGBMHelper::train(const double **featureVector, const double *labels, c
             if (isFinished == 0) {
                 std::cout << "No further gain, cannot split anymore" << std::endl;
                 std::cout << "here";
-                return;
+                return 1;
             }
         }
+        return -1;
 }

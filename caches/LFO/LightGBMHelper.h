@@ -21,7 +21,7 @@ protected:
 
 public:
     double getUtility(const double *featureVector, const int featureLength);
-    void train(const double **featureVector, const double *labels, const int numSamples, const int featureLength);
+    int train(const double **featureVector, const double *labels, const int numSamples, const int featureLength);
 
     LightGBMHelper(){
         dataHandle = nullptr;
