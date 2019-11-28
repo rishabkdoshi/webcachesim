@@ -8,6 +8,11 @@ std::vector<double> get_opt_decisions(std::vector<SimpleRequest> traces,
     uint64_t totalUniqC = parseTraceFile(opt_trace, traces);
     uint64_t totalReqc = opt_trace.size();
 
+//    cout << opt_trace.size() << std::endl;
+//    cout << traces.size() << std::endl;
+//    cout << totalUniqC << std::endl;
+//    cout << totalReqc << std::endl;
+
     // not sure what these do. The paper doesn't talk about this in the 
     // algorithm
     uint64_t maxEjectSize = totalReqc - totalUniqC;
@@ -136,14 +141,17 @@ int run_model(std::ifstream& fstream,
                std::vector<std::vector<double>> & prev_o_features,
                void* cache,
                LFOTrainUtil lfoTrainUtil,
-               bool run_lfo) {
+               bool run_lfo,
+               vector<SimpleRequest> & prev_traces) {
     
     uint64_t time, size, id;
     size_t hits = 0;
     uint64_t counter = 0;
     SimpleRequest* req = new SimpleRequest(0, 0);
     while (fstream >> time >> id >> size && ++counter <= num_traces) {
-        req->reinit(id, size);
+        SimpleRequest sr(id, size);
+        prev_traces.push_back(sr);
+        req = &sr;
         vector<double> o_feature;
         if (!run_lfo) {
             LRUCache* lru_cache = (LRUCache *) cache;
@@ -188,7 +196,7 @@ void run_lfo_sim(const char* path, const std::string cache_type, const uint64_t 
 
     while(true) {
 
-        size_t hits = run_model(fstream, batch_size, prev_o_features, cache, lfoTrainUtil, run_lfo);
+        size_t hits = run_model(fstream, batch_size, prev_o_features, cache, lfoTrainUtil, run_lfo, prev_traces);
         lfoTrainUtil.reset();
 
         cout << epoch << ": " << double(hits)/batch_size << std::endl;
