@@ -51,5 +51,5 @@ bool LFOCache::shouldAdmit(SimpleRequest *req, LFOFeature *lfoFeature) {
     const vector<featureType> &features = lfoFeature->getFeatureVector().second;
     auto featureVector = features.data(); //double*
 
-    return _gbmHelper.getUtility(featureVector) >= _threshold;
+    return _gbmHelper.getUtility(featureVector, features.size()) >= _threshold;
 }

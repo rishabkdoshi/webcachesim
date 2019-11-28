@@ -1,9 +1,3 @@
-#include <LightGBM/config.h>
-#include <LightGBM/dataset_loader.h>
-#include <LightGBM/boosting.h>
-#include <LightGBM/objective_function.h>
-#include <LightGBM/metric.h>
-#include <LightGBM/utils/common.h>
 #include <LightGBM/c_api.h>
 
 #include <iostream>

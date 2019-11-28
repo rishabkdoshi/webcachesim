@@ -11,6 +11,7 @@
 #include <list>
 #include "lfo-feature.h"
 #include "LightGBMHelper.h"
+#include <LightGBM/c_api.h>
 #include <queue>
 
 typedef std::unordered_map<IdType, CacheObject> lfoCacheMapType;
