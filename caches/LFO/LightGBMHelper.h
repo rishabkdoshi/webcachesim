@@ -16,6 +16,7 @@ class LightGBMHelper {
 protected:
     static BoosterHandle boosterHandle;
     static int numIterations;
+    static DatasetHandle dataHandle;
 
 public:
     static double getUtility(const double *featureVector, const int featureLength){
@@ -34,7 +35,6 @@ public:
     }
 
     static void train(const double **featureVector, const double *labels, const int numSamples, const int featureLength){
-        DatasetHandle dataHandle;
         int isdataSetLoaded;
 
         if (dataHandle == nullptr){
@@ -68,6 +68,7 @@ public:
     }
 
     LightGBMHelper(){
+        dataHandle = nullptr;
         boosterHandle = nullptr;
         numIterations = 30;
     }
