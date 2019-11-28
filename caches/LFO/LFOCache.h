@@ -54,7 +54,7 @@ public:
     virtual SimpleRequest* evict_return();
     virtual bool shouldAdmit(SimpleRequest *req, LFOFeature *lfoFeature);
     void re_train_model(std::vector<double> opt_decisions,
-                        std::vector<std::vector<double>> o_features) { cout << "Called rt\n"; }
+                        std::vector<std::vector<double>> o_features);
 
 };
 

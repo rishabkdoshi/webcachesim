@@ -8,18 +8,25 @@
 
 #include "lfo-feature.h"
 #include "LFOCache.h"
+#include <LightGBM/c_api.h>
 //typedef double dvarType;
 
 class LightGBMHelper {
 
+protected:
+    BoosterHandle boosterHandle;
+    int numIterations;
+    DatasetHandle dataHandle;
+
+
 public:
-    static double getUtility(const double *featureVector){
-        double default_val;
-        return default_val;
-    }
+    double getUtility(const double *featureVector, const int featureLength);
+    void train(const double **featureVector, const double *labels, const int numSamples, const int featureLength);
 
     LightGBMHelper(){
-
+        dataHandle = nullptr;
+        boosterHandle = nullptr;
+        numIterations = 30;
     }
 
 };

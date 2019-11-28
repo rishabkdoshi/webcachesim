@@ -51,5 +51,26 @@ bool LFOCache::shouldAdmit(SimpleRequest *req, LFOFeature *lfoFeature) {
     const vector<featureType> &features = lfoFeature->getFeatureVector();
     auto featureVector = features.data(); //double*
 
-    return _gbmHelper.getUtility(featureVector) >= _threshold;
+    return _gbmHelper.getUtility(featureVector, features.size()) >= _threshold;
+}
+
+void LFOCache::re_train_model(std::vector<double> opt_decisions,
+                    std::vector<std::vector<double>> o_features){
+
+    size_t topSize = o_features.size();
+    double sampleData[o_features.size()][o_features.at(0).size()];
+
+
+    int i=0,j=0;
+    for(auto o_feature: o_features){
+        j=0;
+//        sampleData[i] = o_feature.data();
+        for(auto ele : o_feature){
+            sampleData[i][j] = ele;
+            j++;
+        }
+        i++;
+    }
+
+    _gbmHelper.train((const double **) sampleData,opt_decisions.data(), o_features.size(), o_features[0].size());
 }

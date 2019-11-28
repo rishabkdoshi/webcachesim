@@ -148,7 +148,7 @@ int run_model(std::ifstream& fstream,
     size_t hits = 0;
     uint64_t counter = 0;
     SimpleRequest* req = new SimpleRequest(0, 0);
-    while (fstream >> time >> id >> size && ++counter <= num_traces) {
+    while (!fstream.eof() && fstream >> time >> id >> size && ++counter <= num_traces) {
         SimpleRequest sr(id, size);
         prev_traces.push_back(sr);
         req = &sr;
@@ -165,8 +165,11 @@ int run_model(std::ifstream& fstream,
             LFOCache *lfo_cache = (LFOCache *) cache;
             auto lfoFeature = lfoTrainUtil.getLFOFeature(*req, lfo_cache->getFreeBytes());
             o_feature = lfoFeature.getFeatureVector();
-
-            cout << o_feature.size() << endl;
+            if (lfo_cache->lookup(req, &lfoFeature)) {
+                hits++;
+            } else {
+                lfo_cache->admit(req, &lfoFeature);
+            }
         }
         prev_o_features.push_back(o_feature);
     }
@@ -210,7 +213,7 @@ void run_lfo_sim(const char* path, const std::string cache_type, const uint64_t 
             }
             prev_o_features.clear();
         }
-        exit(0);
+        // exit(0);
         ++epoch;
 }
     fstream.close();
