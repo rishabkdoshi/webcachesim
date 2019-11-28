@@ -18,9 +18,9 @@ class LFOTrainUtil {
 private:
 
     //map from objectId to list of LFO features
-    static unordered_map<uint64_t, vector<LFOFeature>> _requestToFeatureMap;
+    unordered_map<uint64_t, vector<LFOFeature>> _requestToFeatureMap;
 
-    static vector<uint64_t> getUpdatedTimeGapList(SimpleRequest r, LFOFeature lfoFeature){
+    vector<uint64_t> getUpdatedTimeGapList(SimpleRequest r, LFOFeature lfoFeature){
         vector<uint64_t> oldTimeGapList = lfoFeature.getTimeGapList();
         uint64_t diff = r.getTimestamp() - lfoFeature.getTimestamp();
         vector<uint64_t> newTimeGapList;
@@ -48,20 +48,20 @@ public:
         _requestToFeatureMap.clear();
     }
 
-    static LFOFeature getLFOFeature(SimpleRequest r, Cache cache){
+    LFOFeature getLFOFeature(SimpleRequest r, size_t cache_free_bytes){
         auto it = _requestToFeatureMap.find(r.getId());
 
         if(it != _requestToFeatureMap.end()){
             vector<LFOFeature> featureList = it->second;
             int size = featureList.size();
             LFOFeature prevFeature = featureList.at(size - 1);
-            LFOFeature newLfoFeature(r, getUpdatedTimeGapList(r, prevFeature), cache.getFreeBytes());
+            LFOFeature newLfoFeature(r, getUpdatedTimeGapList(r, prevFeature), cache_free_bytes);
             it->second.push_back(newLfoFeature);
             return newLfoFeature;
         }else{
             vector<LFOFeature> featureList;
             vector<uint64_t> newTimeGapList;
-            LFOFeature lfoFeature(r,newTimeGapList, cache.getFreeBytes());
+            LFOFeature lfoFeature(r,newTimeGapList, cache_free_bytes);
             (featureList).push_back(lfoFeature);
             _requestToFeatureMap.insert({r.getId(),featureList});
             return lfoFeature;

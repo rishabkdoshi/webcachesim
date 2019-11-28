@@ -1,6 +1,6 @@
 #include "lfosim_helper.hpp"
 
-std::vector<uint64_t> get_opt_decisions(std::vector<SimpleRequest> traces,
+std::vector<double> get_opt_decisions(std::vector<SimpleRequest> traces,
                                         uint64_t cache_size) {
 
     
@@ -102,7 +102,7 @@ std::vector<uint64_t> get_opt_decisions(std::vector<SimpleRequest> traces,
         }
     }
 
-    std::vector<uint64_t> opt_decisions;
+    std::vector<double> opt_decisions;
     for (auto trace : opt_trace) {
         opt_decisions.push_back(trace.dvar);
     }
@@ -115,6 +115,7 @@ void retrain_model(std::vector<uint64_t> opt_decisions,
                    std::vector<std::vector<uint64_t>> o_features) {
     cout << "Here we will retrain the model. " << std::endl;
 }
+
 
 std::vector<SimpleRequest> get_traces(std::ifstream & infile, 
                                       size_t count_per_epoch) {
@@ -130,29 +131,39 @@ std::vector<SimpleRequest> get_traces(std::ifstream & infile,
 }
 
 
-void run_model(std::ifstream& fstream, 
-               size_t num_traces, 
-               size_t epoch,
-               std::vector<std::vector<uint64_t>> prev_o_feature,
-               unique_ptr<Cache>& webcache) {  
+int run_model(std::ifstream& fstream,
+               size_t num_traces,
+               std::vector<std::vector<double>> & prev_o_features,
+               void* cache,
+               LFOTrainUtil lfoTrainUtil,
+               bool run_lfo) {
     
     uint64_t time, size, id;
+    size_t hits = 0;
     uint64_t counter = 0;
+    SimpleRequest* req = new SimpleRequest(0, 0);
     while (fstream >> time >> id >> size && ++counter <= num_traces) {
-         // This is where we run the LRU cache. 
-        SimpleRequest req(id, size, time);
-        if (epoch < 2) {
-            if (webcache->lookup(&req)) {
-                // great...
+        req->reinit(id, size);
+        vector<double> o_feature;
+        if (!run_lfo) {
+            LRUCache* lru_cache = (LRUCache *) cache;
+            o_feature = lfoTrainUtil.getLFOFeature(*req, lru_cache->getFreeBytes()).getFeatureVector();
+            if (lru_cache->lookup(req)) {
+                hits++;
             } else {
-                webcache->admit(&req);
+                lru_cache->admit(req);
             }
         } else {
-            std::vector<uint64_t> feature; // create the feature.
-            
+            LFOCache *lfo_cache = (LFOCache *) cache;
+            auto lfoFeature = lfoTrainUtil.getLFOFeature(*req, lfo_cache->getFreeBytes());
+            o_feature = lfoFeature.getFeatureVector();
 
+            cout << o_feature.size() << endl;
         }
+        prev_o_features.push_back(o_feature);
     }
+
+    return hits;
 
 }
 
@@ -161,27 +172,38 @@ void run_lfo_sim(const char* path, const std::string cache_type, const uint64_t 
     pthread_t threads[MAIN_THREADS];
     size_t batch_size = 1000;
     size_t epoch = 0;
-    std::vector<std::vector<uint64_t>> prev_o_features;
+    std::vector<std::vector<double>> prev_o_features;
     std::vector<SimpleRequest> prev_traces;
+    LFOTrainUtil lfoTrainUtil;
+    bool run_lfo = false;
+
+    LFOCache lfo_cache(0.5);
+    lfo_cache.setSize(cache_size);
 
     std::ifstream fstream;
     fstream.open(path);
 
-    // Initially the Caching technique is LRU. 
-    unique_ptr<Cache> webcache = (Cache::create_unique("LRU"));
+    void* cache = new LRUCache();
+    ((LRUCache *)cache)->setSize(cache_size);
 
     while(true) {
 
-        run_model(fstream, batch_size, epoch, prev_o_features, webcache);
+        size_t hits = run_model(fstream, batch_size, prev_o_features, cache, lfoTrainUtil, run_lfo);
+        lfoTrainUtil.reset();
+
+        cout << epoch << ": " << double(hits)/batch_size << std::endl;
 
         if (!prev_o_features.empty()) {
             auto opt_decisions = get_opt_decisions(prev_traces, cache_size);
-            retrain_model(opt_decisions, prev_o_features);
+            lfo_cache.re_train_model(opt_decisions, prev_o_features);
+            if (!run_lfo) {
+                cache = &lfo_cache;
+                run_lfo = true;
+            }
+            prev_o_features.clear();
         }
-
-        // prev_o_features = o_features;
-        // prev_traces = traces;
+        exit(0);
         ++epoch;
-    }
+}
     fstream.close();
 }

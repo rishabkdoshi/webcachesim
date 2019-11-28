@@ -48,7 +48,7 @@ SimpleRequest* LFOCache::evict_return(){
 }
 
 bool LFOCache::shouldAdmit(SimpleRequest *req, LFOFeature *lfoFeature) {
-    const vector<featureType> &features = lfoFeature->getFeatureVector().second;
+    const vector<featureType> &features = lfoFeature->getFeatureVector();
     auto featureVector = features.data(); //double*
 
     return _gbmHelper.getUtility(featureVector) >= _threshold;

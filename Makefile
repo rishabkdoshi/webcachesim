@@ -12,11 +12,9 @@ LFO_OBJS += caches/lru_variants.o
 LFO_OBJS += caches/gd_variants.o
 LFO_OBJS += random_helper.o
 LFO_OBJS += lfosim.o
-LFO_OBJS += ./caches/LFO/LFOTrainUtil.o
 LFO_OBJS += ./caches/OPTU/parse_trace.o
 LFO_OBJS += ./caches/OPTU/solve_mcf.o
 LFO_OBJS += lfosim_helper.o
-LFO_OBJS += ./caches/LFO/LightGBMHelper.h
 LFO_OBJS += ./caches/LFO/LFOCache.o
 LFO_LIBS += -pthreads
 

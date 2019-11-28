@@ -97,8 +97,8 @@ public:
     uint64_t getAvailableCacheSize() const { return _available_cache_size; }
     void setLabel(uint64_t label) { _label = label; }
 
-    std::pair<IdType, vector<featureType>> getFeatureVector() const {
-        return std::make_pair(_id, _features);
+    std::vector<featureType> getFeatureVector() const {
+        return _features;
     }
     // Caching policies
     

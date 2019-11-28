@@ -16,7 +16,7 @@
 typedef std::unordered_map<IdType, CacheObject> lfoCacheMapType;
 typedef double dvarType;
 
-class LFOCache : Cache {
+class LFOCache : public Cache {
 private:
     struct GreaterCacheObject {
         bool operator()(CacheObject const& p1, CacheObject const& p2)
@@ -34,9 +34,7 @@ protected:
 
     //min pq to decide which cacheobject to evict
     std::priority_queue<CacheObject, vector<CacheObject>, GreaterCacheObject> _cacheObjectMinpq;
-
     LightGBMHelper _gbmHelper;
-
     dvarType _threshold;
 
 
@@ -55,6 +53,8 @@ public:
     virtual void evict();
     virtual SimpleRequest* evict_return();
     virtual bool shouldAdmit(SimpleRequest *req, LFOFeature *lfoFeature);
+    void re_train_model(std::vector<double> opt_decisions,
+                        std::vector<std::vector<double>> o_features) { cout << "Called rt\n"; }
 
 };
 
