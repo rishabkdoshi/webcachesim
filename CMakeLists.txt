@@ -50,5 +50,7 @@ add_executable(lfosim
         caches/OPTU/parse_trace.cpp
         caches/OPTU/parse_trace.h
         caches/OPTU/solve_mcf.cpp
-        caches/OPTU/solve_mcf.h)
+        caches/OPTU/solve_mcf.h
+        LightGBM/lib_lightgbm.dylib
+        LightGBM/c_api.h caches/LFO/LightGBMHelper.cpp)
 
