@@ -38,9 +38,6 @@ $(TARGET):	$(OBJS)
 $(LFO_TARGET): $(LFO_OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LFO_LDFLAGS)  LightGBM/lib_lightgbm.dylib
 
-$(LFO_CLEAN):
-	-rm ./bin/$(LFO_TARGET) $(LFO_OBJS) $(LFO_DEPS)
-
 %.o: %.c
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
@@ -52,3 +49,9 @@ DEPS = $(OBJS:%.o=%.d)
 
 clean:
 	-rm $(TARGET) $(OBJS) $(DEPS)
+
+LFO_DEPS = $(LFO_OBJS:%.o=%.d)
+-include $(LFO_DEPS)
+
+$(LFO_CLEAN):
+	-rm $(LFO_TARGET) $(LFO_OBJS) $(LFO_DEPS)

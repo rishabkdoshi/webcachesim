@@ -25,6 +25,7 @@ void LFOCache::admit(SimpleRequest* req, LFOFeature* lfoFeature){
         _cacheObjectMinpq.push(obj);
         _currentSize += size;
     }
+    
 }
 
 void LFOCache::evict(SimpleRequest *req){
