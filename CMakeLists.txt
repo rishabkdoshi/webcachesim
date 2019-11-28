@@ -51,6 +51,9 @@ add_executable(lfosim
         caches/OPTU/parse_trace.h
         caches/OPTU/solve_mcf.cpp
         caches/OPTU/solve_mcf.h
-        LightGBM/lib_lightgbm.dylib
         LightGBM/c_api.h caches/LFO/LightGBMHelper.cpp)
+
+find_library(LIGHTGBM_LIB lib_lightgbm.dylib LightGBM)
+target_link_libraries(lfosim ${LIGHTGBM_LIB})
+
 

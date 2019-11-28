@@ -149,7 +149,7 @@ int run_model(std::ifstream& fstream,
     uint64_t counter = 0;
     SimpleRequest* req = new SimpleRequest(0, 0);
     while (!fstream.eof() && fstream >> time >> id >> size && ++counter <= num_traces) {
-        SimpleRequest sr(id, size);
+        SimpleRequest sr = SimpleRequest(id, size, time);
         prev_traces.push_back(sr);
         req = &sr;
         vector<double> o_feature;

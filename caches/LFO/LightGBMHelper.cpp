@@ -50,7 +50,7 @@ void LightGBMHelper::train(const double **featureVector, const double *labels, c
                 std::cout << "Failed to update at iteration number " << i << "\n";
             }
             if (isFinished == 0) {
-                std::cout << "No further gain, cannot split anymore\n";
+                std::cout << "No further gain, cannot split anymore" << std::endl;
                 std::cout << "here";
                 return;
             }
