@@ -152,7 +152,7 @@ int run_model(std::ifstream& fstream,
         // std::cout << "HELLO" << run_lfo << std::endl;
         if (!run_lfo) {
             LRUCache* lru_cache = (LRUCache *) cache;
-            o_feature = lfoTrainUtil.getLFOFeature(*req, lru_cache->getFreeBytes()).getFeatureVector();
+            o_feature = lfoTrainUtil.getFeature(*req, lru_cache->getFreeBytes()).getFeatureVector();
             if (lru_cache->lookup(req)) {
                 hits++;
             } else {
@@ -160,7 +160,7 @@ int run_model(std::ifstream& fstream,
             }
         } else {
             LFOCache *lfo_cache = (LFOCache *) cache;
-            auto lfoFeature = lfoTrainUtil.getLFOFeature(*req, lfo_cache->getFreeBytes());
+            auto lfoFeature = lfoTrainUtil.getFeature(*req, lfo_cache->getFreeBytes());
             o_feature = lfoFeature.getFeatureVector();
             if (lfo_cache->lookup(req, &lfoFeature)) {
                 cout << "Found the sob" << std::endl;

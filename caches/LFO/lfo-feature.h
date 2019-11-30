@@ -10,12 +10,16 @@
 #include <vector>
 #include <request.h>
 #include "OptimizationGoal.h"
+#include "alglib/src/stdafx.h"
+#include "alglib/src/dataanalysis.h"
 
 using namespace std;
 
 const uint64_t MISSING_TIME_GAP = 0;
 const uint64_t CACHE_HIT = 1;
 const uint64_t CACHE_MISS = 0;
+const double ALPHA = 0.5;
+
 
 /**
  * Object size;
@@ -41,8 +45,24 @@ private:
 
     uint64_t _label; //admitted to cache or not
 
+    //feature enhancement
     bool _use_exponential_time_gap;
-    
+    bool _use_rl_cache_features;
+
+    //RL Cache related features
+    double _frequency;
+    uint64_t _temporal_recency;
+    double _rho_j; //exponential smoothing of rj - _temporal_recency
+    uint64_t _ordinal_recency;
+    double _delta_j;//exponential smoothing of dj - _ordinal_recency
+
+    uint64_t _request_no; // request no in the trace (helps in calculating ordinal recency)
+    uint64_t _times_requested; //no. of times requested (helps in calculating frequency)
+    vector<double> _temporal_recency_list; //used for calculating rho_j
+    vector<double> _ordinal_recency_list; //used for calculating delta_j
+
+
+
     vector<featureType> _features;
     
     void createFeatureVector(){
@@ -50,6 +70,22 @@ private:
         _features.push_back(getRetrievalCost());
         _features.push_back(_available_cache_size);
 
+
+        if(_use_rl_cache_features){
+            _features.push_back(_frequency);
+            _features.push_back(_temporal_recency);
+            _features.push_back(_ordinal_recency);
+            _features.push_back(_rho_j);
+            _features.push_back(_delta_j);
+            _features.push_back((_frequency/_size));
+            _features.push_back((_frequency*_size));
+        }
+
+        addTimeGapFeature();
+
+    }
+
+    vector<featureType> addTimeGapFeature(){
         if(_use_exponential_time_gap){
             vector<uint64_t> timeGaps;
             for(int i=1; i < 2050 && i < _time_gap_list.size(); i*=2){
@@ -71,29 +107,32 @@ private:
                 _features.push_back(*it);
             }
         }
-
     }
 
 public:
     // Create request
-    LFOFeature(IdType id, uint64_t size, uint64_t timestamp, vector<uint64_t> time_gap_list, uint64_t available_cache_size)
+    LFOFeature(IdType id, uint64_t size, uint64_t timestamp, vector<uint64_t> time_gap_list, uint64_t available_cache_size, bool useExponentialTimeGap = false, bool useRLCacheFeatures = false)
             : _id(id),
               _size(size),
               _timestamp(timestamp),
               _time_gap_list(time_gap_list),
-              _available_cache_size(available_cache_size)
+              _available_cache_size(available_cache_size),
+              _use_exponential_time_gap(useExponentialTimeGap),
+              _use_rl_cache_features(useRLCacheFeatures)
     {
         //default
         _optimizationGoal = BYTE_HIT_RATIO;
         createFeatureVector();
     }
 
-    LFOFeature(SimpleRequest simpleRequest, vector<uint64_t> time_gap_list, uint64_t available_cache_size)
+    LFOFeature(SimpleRequest simpleRequest, vector<uint64_t> time_gap_list, uint64_t available_cache_size, bool useExponentialTimeGap = false, bool useRLCacheFeatures = false)
         : _id(simpleRequest.getId()),
         _size(simpleRequest.getSize()),
         _timestamp(simpleRequest.getTimestamp()),
         _time_gap_list(time_gap_list),
-        _available_cache_size(available_cache_size) {
+        _available_cache_size(available_cache_size),
+        _use_exponential_time_gap(useExponentialTimeGap),
+        _use_rl_cache_features(useRLCacheFeatures) {
         _optimizationGoal = BYTE_HIT_RATIO;
         createFeatureVector();
     }
@@ -128,6 +167,67 @@ public:
         _use_exponential_time_gap = useExponentialTimeGap;
     }
 
+    bool isUseRlCacheFeatures() const {
+        return _use_rl_cache_features;
+    }
+
+    void setUseRlCacheFeatures(bool useRlCacheFeatures) {
+        _use_rl_cache_features = useRlCacheFeatures;
+    }
+
+    void calculateRhoJ(){
+        alglib::real_1d_array x;// = str;
+        x.setcontent(_temporal_recency_list.size(), &(_temporal_recency_list[0]));
+        filterema(x, ALPHA);
+        _rho_j = x[_temporal_recency_list.size() - 1];
+    }
+
+    void calculateDeltaJ(){
+        alglib::real_1d_array x;// = str;
+        x.setcontent(_ordinal_recency_list.size(), &(_ordinal_recency_list[0]));
+        filterema(x, ALPHA);
+        _delta_j = x[_ordinal_recency_list.size() - 1];
+    }
+
+    double getFrequency() const {
+        return _frequency;
+    }
+
+    void setFrequency(double frequency) {
+        _frequency = frequency;
+    }
+
+    uint64_t getTemporalRecency() const {
+        return _temporal_recency;
+    }
+
+    void setTemporalRecency(uint64_t temporalRecency) {
+        _temporal_recency = temporalRecency;
+    }
+
+    uint64_t getOrdinalRecency() const {
+        return _ordinal_recency;
+    }
+
+    void setOrdinalRecency(uint64_t ordinalRecency) {
+        _ordinal_recency = ordinalRecency;
+    }
+
+    uint64_t getRequestNo() const {
+        return _request_no;
+    }
+
+    void setRequestNo(uint64_t requestNo) {
+        _request_no = requestNo;
+    }
+
+    uint64_t getTimesRequested() const {
+        return _times_requested;
+    }
+
+    void setTimesRequested(uint64_t timesRequested) {
+        _times_requested = timesRequested;
+    }
 };
 
 #endif //WEBCACHESIM_LFO_FEATURE_H
