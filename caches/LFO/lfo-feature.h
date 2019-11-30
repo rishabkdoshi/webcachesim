@@ -40,6 +40,8 @@ private:
     uint64_t _available_cache_size;
 
     uint64_t _label; //admitted to cache or not
+
+    bool _use_exponential_time_gap;
     
     vector<featureType> _features;
     
@@ -48,12 +50,28 @@ private:
         _features.push_back(getRetrievalCost());
         _features.push_back(_available_cache_size);
 
-        for(int i=_time_gap_list.size();i<50;i++)
-            _features.push_back(MISSING_TIME_GAP);
+        if(_use_exponential_time_gap){
+            vector<uint64_t> timeGaps;
+            for(int i=1; i < 2050 && i < _time_gap_list.size(); i*=2){
+                timeGaps.push_back(_time_gap_list.at(i-1));
+            }
 
-        for (auto it = _time_gap_list.begin(); it != _time_gap_list.end(); ++it){
-            _features.push_back(*it);
+//            1,2,4,16,32,64,128,256,512,1024,2048 - size 11
+            for(int i=timeGaps.size();i<12;i++){
+                _features.push_back(MISSING_TIME_GAP);
+            }
+
+            _features.insert(_features.end(), timeGaps.begin(), timeGaps.end());
+
+        }else{
+            for(int i=_time_gap_list.size();i<50;i++)
+                _features.push_back(MISSING_TIME_GAP);
+
+            for (auto it = _time_gap_list.begin(); it != _time_gap_list.end(); ++it){
+                _features.push_back(*it);
+            }
         }
+
     }
 
 public:
@@ -101,7 +119,15 @@ public:
         return _features;
     }
     // Caching policies
-    
+
+    bool isUseExponentialTimeGap() const {
+        return _use_exponential_time_gap;
+    }
+
+    void setUseExponentialTimeGap(bool useExponentialTimeGap) {
+        _use_exponential_time_gap = useExponentialTimeGap;
+    }
+
 };
 
 #endif //WEBCACHESIM_LFO_FEATURE_H

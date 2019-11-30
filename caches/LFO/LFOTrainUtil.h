@@ -32,9 +32,16 @@ private:
         //last request
         newTimeGapList.push_back(diff);
 
-        if(newTimeGapList.size() > 50){
-            newTimeGapList.erase(newTimeGapList.begin());
+        if(lfoFeature.isUseExponentialTimeGap()){
+            if(newTimeGapList.size() > 2050){
+                newTimeGapList.erase(newTimeGapList.begin());
+            }
+        }else{
+            if(newTimeGapList.size() > 50){
+                newTimeGapList.erase(newTimeGapList.begin());
+            }
         }
+
 
         return newTimeGapList;
     }
